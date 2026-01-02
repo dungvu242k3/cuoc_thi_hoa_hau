@@ -21,6 +21,7 @@ type Contestant struct {
 	ID           string `bson:"_id,omitempty" json:"id"`
 	UserID       string `bson:"user_id" json:"userId"`
 	IdentifyCard string `bson:"identify_card" json:"identifyCard"`
+	SBD          string `bson:"sbd" json:"sbd"` // Số báo danh
 
 	PersonalInfo PersonalInfo   `bson:"personal_info" json:"personalInfo"`
 	PhysicalInfo PhysicalInfo   `bson:"physical_info" json:"physicalInfo"`
@@ -40,6 +41,7 @@ type PersonalInfo struct {
 	FullName    string    `bson:"full_name" json:"fullName"`
 	DateOfBirth time.Time `bson:"dob" json:"dob"`
 	Nationality string    `bson:"nationality" json:"nationality"`
+	Job         string    `bson:"job" json:"job"` // Nghề nghiệp
 	Phone       string    `bson:"phone" json:"phone"`
 	Email       string    `bson:"email" json:"email"`
 	Address     string    `bson:"address" json:"address"`
@@ -77,6 +79,10 @@ func (c *Contestant) ToPublicView() *Contestant {
 	if !c.IsPublic {
 		safe.Portfolio.GalleryURLs = nil
 	}
+
+	// Public View: Giữ lại SBD và Job
+	// safe.SBD = c.SBD (Mặc định đã copy)
+	// safe.PersonalInfo.Job = c.PersonalInfo.Job (Mặc định đã copy)
 
 	return &safe
 }

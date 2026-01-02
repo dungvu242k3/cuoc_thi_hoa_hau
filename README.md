@@ -111,7 +111,7 @@ query {
 
 ---
 
-### B. Nhóm Công Chúng (Public - Không cần đăng nhập)
+### B. Nhóm Cộng Đồng & Khán Giả (Community) 
 
 #### 1. Danh sách thí sinh & Chi tiết
 *Dữ liệu trả về đã được ẩn thông tin nhạy cảm.*
@@ -124,11 +124,6 @@ query {
   }
 }
 
-query {
-  publicContestantDetail(id: "...") {
-    portfolio { galleryUrls introduction }
-  }
-}
 ```
 
 #### 2. Lịch trình cuộc thi

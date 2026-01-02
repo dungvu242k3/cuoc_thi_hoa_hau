@@ -108,17 +108,6 @@ func (r *queryResolver) PublicContestants(ctx context.Context, page *int, limit 
 	return res, nil
 }
 
-func (r *queryResolver) PublicContestantDetail(ctx context.Context, id string) (*model.PublicContestant, error) {
-	// Note: ContestantService cần thêm hàm GetByID hoặc dùng lại Repo
-	// Ở đây giả sử dùng Repo hoặc Service có hàm tương tự
-	// Để đơn giản ta gọi Service.GetPublicDetail (cần thêm vào service) hoặc dùng tạm GetByID rồi sanitize
-	profile, err := r.ContestantService.GetPublicDetail(ctx, id) // Giả sử đã thêm hàm này
-	if err != nil {
-		return nil, err
-	}
-	return mapToPublicGraphModel(profile.ToPublicView()), nil
-}
-
 func mapToPublicGraphModel(d *domain.Contestant) *model.PublicContestant {
 	if d == nil {
 		return nil

@@ -1,7 +1,9 @@
 
 type Contestant {
   id: ID!
+  id: ID!
   userId: String!
+  sbd: String      # Số báo danh
   status: String!
   reason: String
   isPublic: Boolean!
@@ -18,7 +20,9 @@ type Contestant {
 # Type dành riêng cho Public (Che giấu thông tin nhạy cảm)
 type PublicContestant {
   id: ID!
+  id: ID!
   # userId: String! Không public User ID hệ thống
+  sbd: String      # Số báo danh
   status: String!
   # isPublic: Boolean! 
   
@@ -33,7 +37,9 @@ type PublicContestant {
 type PersonalInfo {
   fullName: String!
   dob: String!
+  dob: String!
   nationality: String
+  job: String           # Nghề nghiệp
   phone: String         
   email: String        
   address: String     
@@ -44,6 +50,9 @@ type PublicPersonalInfo {
   fullName: String!
   dob: String!
   nationality: String
+  dob: String!
+  nationality: String
+  job: String
   # Đã loại bỏ Phone, Email, Address
 }
 
@@ -72,6 +81,8 @@ input CreateContestantInput {
   identifyCard: String!
   dob: String!
   nationality: String!
+  nationality: String!
+  job: String!
   phone: String!
   email: String!
   address: String!
@@ -84,6 +95,8 @@ input UpdateContestantInput {
   fullName: String
   dob: String
   nationality: String
+  nationality: String
+  job: String
   phone: String
   email: String
   address: String

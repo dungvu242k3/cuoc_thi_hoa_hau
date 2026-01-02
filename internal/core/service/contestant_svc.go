@@ -46,6 +46,7 @@ func (s *contestantService) CreateProfile(ctx context.Context, userID string, in
 	input.UpdatedAt = time.Now()
 
 	input.Portfolio.Introduction = html.EscapeString(input.Portfolio.Introduction)
+	// Job và các trường khác sẽ được bind tự động từ input vào struct
 
 	if err := s.repo.Create(ctx, input); err != nil {
 		return nil, err
@@ -82,6 +83,9 @@ func (s *contestantService) UpdateProfile(ctx context.Context, userID string, in
 	}
 	if input.PersonalInfo.Address != "" {
 		current.PersonalInfo.Address = input.PersonalInfo.Address
+	}
+	if input.PersonalInfo.Job != "" {
+		current.PersonalInfo.Job = input.PersonalInfo.Job
 	}
 
 	// Physical Info
