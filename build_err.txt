@@ -1,0 +1,10 @@
+internal\core\domain\score.go:1:1: expected 'package', found 'EOF'
+internal\core\port\infra.go:1:1: expected 'package', found 'EOF'
+internal\adapter\storage\mongodb\contestant_repo.go:10:2: no required module provides package go.mongodb.org/mongo-driver/bson; to add it:
+	go get go.mongodb.org/mongo-driver/bson
+internal\adapter\storage\mongodb\contestant_repo.go:11:2: no required module provides package go.mongodb.org/mongo-driver/mongo; to add it:
+	go get go.mongodb.org/mongo-driver/mongo
+internal\adapter\storage\mongodb\contestant_repo.go:12:2: no required module provides package go.mongodb.org/mongo-driver/mongo/options; to add it:
+	go get go.mongodb.org/mongo-driver/mongo/options
+internal\adapter\storage\mongodb\connection.go:1:1: expected 'package', found 'EOF'
+no Go files in c:\Users\dungv\cuoc_thi_hoa_hau

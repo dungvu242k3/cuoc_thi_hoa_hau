@@ -1,0 +1,64 @@
+"""
+Loại phản hồi
+"""
+enum FeedbackType {
+  PROPOSAL  # Đề xuất
+  COMPLAINT # Khiếu nại
+  REQUEST   # Yêu cầu đặc biệt
+}
+
+"""
+Trạng thái xử lý phản hồi
+"""
+enum FeedbackStatus {
+  PENDING   # Đang chờ
+  RESOLVED  # Đã giải quyết
+  REJECTED  # Từ chối
+}
+
+"""
+Đối tượng Phản hồi (Feedback)
+"""
+type Feedback {
+  id: ID!
+  userId: String!
+  title: String!
+  content: String!
+  """
+  Loại phản hồi (PROPOSAL, COMPLAINT, REQUEST)
+  """
+  type: FeedbackType!
+  """
+  Trạng thái (PENDING, RESOLVED, REJECTED)
+  """
+  status: FeedbackStatus!
+  createdAt: String!
+}
+
+"""
+Kết quả trả về cho danh sách phản hồi phân trang
+"""
+type FeedbackList {
+  items: [Feedback!]!
+  total: Int!
+}
+
+input SendFeedbackInput {
+  title: String!
+  content: String!
+  type: FeedbackType!
+}
+
+extend type Mutation {
+  """
+  Gửi phản hồi mới (Chỉ dành cho thí sinh)
+  """
+  sendFeedback(input: SendFeedbackInput!): Boolean!
+}
+
+extend type Query {
+  """
+  Xem danh sách phản hồi của tôi
+  """
+  myFeedbacks(limit: Int = 10, offset: Int = 0): FeedbackList!
+}

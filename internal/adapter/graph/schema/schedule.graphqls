@@ -1,0 +1,48 @@
+"""
+Loại lịch trình của thí sinh
+"""
+enum ScheduleType {
+  EXAM      # Lịch thi đấu chính thức
+  TRAINING  # Lịch tập luyện
+  EVENT     # Sự kiện truyền thông
+}
+
+"""
+Đối tượng Lịch trình (Schedule)
+Đại diện cho một sự kiện trong cuộc thi.
+"""
+type Schedule {
+  id: ID!
+  title: String!
+  description: String!
+  """
+  Loại sự kiện (EXAM, TRAINING, EVENT)
+  """
+  type: ScheduleType!
+  location: String!
+  """
+  Thời gian bắt đầu (ISO 8601 String)
+  """
+  startTime: String!
+  """
+  Thời gian kết thúc (ISO 8601 String)
+  """
+  endTime: String!
+  createdAt: String!
+}
+
+"""
+Kết quả trả về cho danh sách phân trang
+"""
+type ScheduleList {
+  items: [Schedule!]!
+  total: Int!
+}
+
+extend type Query {
+  """
+  Lấy danh sách lịch trình (Public)
+  Hỗ trợ phân trang và sắp xếp theo thời gian mới nhất.
+  """
+  publicSchedules(limit: Int = 10, offset: Int = 0): ScheduleList!
+}

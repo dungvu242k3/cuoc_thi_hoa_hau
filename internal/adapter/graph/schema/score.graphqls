@@ -1,0 +1,22 @@
+"""
+Chi tiết điểm số theo tiêu chí
+"""
+type ScoreCriterion {
+  key: String!   # Tên tiêu chí (VD: "Hình thể", "Ứng xử")
+  value: Float!  # Điểm số
+}
+
+"""
+Thông tin điểm của thí sinh
+"""
+type ScoreDetail {
+  totalScore: Float!
+  details: [ScoreCriterion!]!
+}
+
+extend type Query {
+  """
+  Xem điểm số chi tiết của bản thân (Chỉ dành cho thí sinh)
+  """
+  myScore: ScoreDetail
+}

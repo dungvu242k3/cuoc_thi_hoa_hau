@@ -1,0 +1,116 @@
+
+type Contestant {
+  id: ID!
+  userId: String!
+  status: String!
+  reason: String
+  isPublic: Boolean!
+  
+  personalInfo: PersonalInfo!
+  physicalInfo: PhysicalInfo
+  skillEducation: SkillEducation
+  portfolio: Portfolio
+  
+  createdAt: String!
+  updatedAt: String!
+}
+
+# Type dành riêng cho Public (Che giấu thông tin nhạy cảm)
+type PublicContestant {
+  id: ID!
+  # userId: String! Không public User ID hệ thống
+  status: String!
+  # isPublic: Boolean! 
+  
+  personalInfo: PublicPersonalInfo! # Dùng type đã che info
+  physicalInfo: PhysicalInfo
+  skillEducation: SkillEducation
+  portfolio: Portfolio
+  
+  createdAt: String!
+}
+
+type PersonalInfo {
+  fullName: String!
+  dob: String!
+  nationality: String
+  phone: String         
+  email: String        
+  address: String     
+}
+
+# Personal Info bản Public
+type PublicPersonalInfo {
+  fullName: String!
+  dob: String!
+  nationality: String
+  # Đã loại bỏ Phone, Email, Address
+}
+
+type PhysicalInfo {
+  height: Float!
+  weight: Float!
+  measurements: String!
+}
+
+type SkillEducation {
+  educationLevel: String
+  languages: [String!]
+  skills: [String!]
+}
+
+type Portfolio {
+  avatarUrl: String
+  galleryUrls: [String!]
+  introduction: String
+  socialLinks: [String!]
+}
+
+
+input CreateContestantInput {
+  fullName: String!
+  identifyCard: String!
+  dob: String!
+  nationality: String!
+  phone: String!
+  email: String!
+  address: String!
+  height: Float!
+  weight: Float!
+  measurements: String!
+}
+
+input UpdateContestantInput {
+  fullName: String
+  dob: String
+  nationality: String
+  phone: String
+  email: String
+  address: String
+  height: Float
+  weight: Float
+  measurements: String
+  educationLevel: String
+  languages: [String!]
+  skills: [String!]
+  avatarUrl: String
+  galleryUrls: [String!]
+  introduction: String
+  socialLinks: [String!]
+}
+
+# API DEFINITIONS 
+
+extend type Mutation {
+  createContestantProfile(input: CreateContestantInput!): Contestant!
+  updateContestantProfile(input: UpdateContestantInput!): Contestant!
+  submitProfile: Boolean!
+}
+
+extend type Query {
+  myProfile: Contestant
+  
+  # Return PublicContestant instead of Contestant
+  publicContestants(page: Int = 1, limit: Int = 20): [PublicContestant!]!
+  publicContestantDetail(id: ID!): PublicContestant
+}
