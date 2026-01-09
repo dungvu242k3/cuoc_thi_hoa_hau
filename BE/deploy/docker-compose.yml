@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: be_server
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      # Environment variables should be loaded from .env or configured here
+    restart: unless-stopped
