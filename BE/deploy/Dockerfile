@@ -17,7 +17,7 @@ COPY . .
 
 # Build the application
 # -o specifies the output path relative to WORKDIR
-RUN CGV=0 GOOS=linux go build -o bin/server ./cmd/api
+RUN CGO_ENABLED=0 GOOS=linux go build -o ./bin/server ./cmd/api
 
 # Run Stage
 FROM alpine:latest
