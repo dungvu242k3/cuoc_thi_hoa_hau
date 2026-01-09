@@ -90,7 +90,6 @@ export const ContestantDashboard = () => {
     const [profile, setProfile] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState("overview");
-    const [stats, setStats] = useState<any>(null);
     const [uploading, setUploading] = useState(false);
 
     // Feedback State

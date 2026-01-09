@@ -50,7 +50,7 @@ mutation CreateContestantProfile($input: CreateContestantInput!) {
 
 export const ContestantRegistration = () => {
     const navigate = useNavigate();
-    const { register, handleSubmit, setValue, watch, reset } = useForm();
+    const { register, handleSubmit, setValue, watch } = useForm();
     const [isSaving, setIsSaving] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [avatarUrl, setAvatarUrl] = useState("");
