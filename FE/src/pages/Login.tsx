@@ -1,0 +1,137 @@
+import { Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+// Note: We'll use basic fetch for now, can perform cleanup later to use a proper query hook
+// Ideally we should use URQL or Apollo for GQL, but sticking to simple fetch for demo if not set up
+
+import { apiRequest } from "../lib/api";
+
+const LOGIN_MUTATION = `
+mutation Login($email: String!, $password: String!) {
+  login(email: $email, password: $password) {
+    token
+  }
+}
+`;
+
+interface LoginFormData {
+    email: string;
+    password: string;
+}
+
+export const Login = () => {
+    const { register, handleSubmit } = useForm<LoginFormData>();
+    const [error, setError] = useState("");
+    const navigate = useNavigate();
+
+    const onSubmit = async (data: LoginFormData) => {
+        setError("");
+        try {
+            const result = await apiRequest(LOGIN_MUTATION, { email: data.email, password: data.password });
+            const token = result.login.token;
+            localStorage.setItem("token", token);
+
+            // Redirect to dashboard
+            navigate({ to: "/contestant" });
+            window.location.href = "/contestant";
+        } catch (err: any) {
+            setError(err.message || "Failed to login");
+        }
+    };
+
+    return (
+        <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-cover bg-center" style={{ backgroundImage: "url('/login.jpeg')" }}>
+            <div className="max-w-4xl w-full bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden flex shadow-slate-200/50">
+                {/* Left Side: Image */}
+                <div className="hidden md:block w-1/2 bg-cover bg-center" style={{ backgroundImage: "url('/1.jpeg')" }}>
+                </div>
+
+                {/* Right Side: Form */}
+                <div className="w-full md:w-1/2 p-8 md:p-12 lg:p-16 flex flex-col justify-center relative">
+                    <div className="sm:mx-auto sm:w-full sm:max-w-md">
+                        <h2 className="mt-2 text-center text-3xl font-extrabold tracking-tight text-gray-900">
+                            Hành trình bắt đầu
+                        </h2>
+                        <p className="mt-2 text-center text-sm text-gray-600">
+                            Đăng nhập để tiếp tục hành trình chinh phục vương miện
+                        </p>
+                    </div>
+
+                    <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
+                        <div className="space-y-4">
+                            <div>
+                                <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">
+                                    Email
+                                </label>
+                                <div className="mt-1">
+                                    <input
+                                        id="email"
+                                        type="email"
+                                        required
+                                        className="block w-full rounded-lg border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-pink-500 sm:text-sm sm:leading-6 px-4 transition-all duration-200"
+                                        placeholder="you@example.com"
+                                        {...register("email", { required: true })}
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <div className="flex items-center justify-between">
+                                    <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">
+                                        Password
+                                    </label>
+                                </div>
+                                <div className="mt-1">
+                                    <input
+                                        id="password"
+                                        type="password"
+                                        required
+                                        className="block w-full rounded-lg border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-pink-500 sm:text-sm sm:leading-6 px-4 transition-all duration-200"
+                                        placeholder="••••••••"
+                                        {...register("password", { required: true })}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {error && (
+                            <div className="rounded-md bg-red-50 p-4">
+                                <div className="flex">
+                                    <div className="ml-3">
+                                        <h3 className="text-sm font-medium text-red-800">Đăng nhập thất bại</h3>
+                                        <div className="mt-2 text-sm text-red-700">
+                                            <p>{error}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        <div>
+                            <button
+                                type="submit"
+                                className="flex w-full justify-center rounded-lg
+bg-gradient-to-r from-rose-400 via-pink-400 to-purple-400
+px-3 py-3 text-sm font-semibold leading-6 text-white
+shadow-[0_15px_35px_rgba(200,150,200,0.45)]
+hover:from-rose-300 hover:via-pink-300 hover:to-purple-300
+focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-400
+transition-all duration-300 transform hover:-translate-y-0.5
+"
+                            >
+                                Đăng nhập
+                            </button>
+                        </div>
+                    </form>
+
+                    <p className="mt-10 text-center text-sm text-gray-500">
+                        Chưa có tài khoản? {" "}
+                        <Link to="/register" className="font-semibold leading-6 text-pink-600 hover:text-pink-500 transition-colors">
+                            Đăng ký
+                        </Link>
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+};

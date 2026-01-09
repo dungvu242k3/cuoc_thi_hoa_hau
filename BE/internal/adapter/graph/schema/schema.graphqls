@@ -1,0 +1,9 @@
+scalar Time
+
+type Query {
+  health: String
+}
+
+type Mutation {
+  ping: String
+}

@@ -1,0 +1,47 @@
+import { useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { apiRequest } from "../lib/api";
+
+const MY_PROFILE_QUERY_CHECK = `
+query MyProfile {
+  myProfile {
+    id
+  }
+}
+`;
+
+export const ContestantDispatcher = () => {
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            navigate({ to: "/login" });
+            return;
+        }
+
+        apiRequest(MY_PROFILE_QUERY_CHECK, {}, token)
+            .then((data: any) => {
+                if (data && data.myProfile) {
+                    // Registered -> Dashboard
+                    navigate({ to: "/contestant/dashboard" });
+                } else {
+                    // Not Registered -> Register Form
+                    navigate({ to: "/contestant/register" });
+                }
+            })
+            .catch(() => {
+                // If error, assume needs login or something wrong, sending to login is safest
+                navigate({ to: "/login" });
+            });
+    }, [navigate]);
+
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-white">
+            <div className="flex flex-col items-center animate-pulse">
+                <div className="h-12 w-12 bg-blue-900 rounded-full mb-4"></div>
+                <div className="text-gray-400 font-light tracking-widest uppercase">Checking Profile...</div>
+            </div>
+        </div>
+    );
+};

@@ -1,0 +1,25 @@
+# Environment Variables
+.env
+.env.*
+
+# Binaries
+main
+api.exe
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test binary
+*.test
+
+# Output
+/dist/
+/bin/
+
+# Vendor
+vendor/
+
+# OS
+.DS_Store
+Thumbs.db

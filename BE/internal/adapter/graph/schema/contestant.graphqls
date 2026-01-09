@@ -1,0 +1,97 @@
+type Contestant {
+  id: ID!
+  userId: String!
+  sbd: String
+  status: String!
+  isPublic: Boolean!
+  personalInfo: PersonalInfo!
+  physicalInfo: PhysicalInfo
+  skillEducation: SkillEducation
+  portfolio: Portfolio
+  createdAt: Time!
+  updatedAt: Time!
+}
+
+type PersonalInfo {
+  fullName: String!
+  dob: Time!
+  nationality: String
+  gender: String
+  identityCard: String
+  phone: String
+  email: String
+  address: String
+  job: String
+}
+
+type PhysicalInfo {
+  height: Float!
+  weight: Float!
+  measurements: String
+}
+
+type SkillEducation {
+  educationLevel: String
+  languages: [String!]
+  skills: [String!]
+}
+
+type Portfolio {
+  avatarUrl: String
+  galleryUrls: [String!]
+  videoUrl: String
+  introduction: String
+  socialLinks: [String!]
+}
+
+input CreateContestantInput {
+  fullName: String!
+  dob: String!
+  nationality: String!
+  identityCard: String
+  phone: String!
+  email: String!
+  address: String!
+  job: String!
+  height: Float!
+  weight: Float!
+  measurements: String!
+  educationLevel: String
+  languages: [String!]
+  skills: [String!]
+  avatarUrl: String
+  galleryUrls: [String!]
+  introduction: String
+  socialLinks: [String!]
+}
+
+input UpdateContestantInput {
+  fullName: String
+  dob: String
+  nationality: String
+  job: String
+  phone: String
+  email: String
+  address: String
+  height: Float
+  weight: Float
+  measurements: String
+  educationLevel: String
+  languages: [String!]
+  skills: [String!]
+  avatarUrl: String
+  galleryUrls: [String!]
+  introduction: String
+  socialLinks: [String!]
+}
+
+extend type Query {
+  myProfile: Contestant
+  publicContestants(page: Int = 1, limit: Int = 20): [Contestant!]!
+  publicContestantDetail(id: ID!): Contestant
+}
+
+extend type Mutation {
+  createContestantProfile(input: CreateContestantInput!): Contestant!
+  updateContestantProfile(input: UpdateContestantInput!): Contestant!
+}

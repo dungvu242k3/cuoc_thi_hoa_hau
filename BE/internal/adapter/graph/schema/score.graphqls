@@ -1,0 +1,15 @@
+type Score {
+  id: ID!
+  roundId: String!
+  sbd: String!
+  totalScore: Float!
+  criteriaScores: Map # JSON object
+  comment: String
+  createdAt: Time!
+}
+
+scalar Map
+
+extend type Query {
+  myScores: [Score!]!
+}

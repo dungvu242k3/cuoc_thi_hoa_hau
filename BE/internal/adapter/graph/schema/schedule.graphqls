@@ -1,0 +1,15 @@
+type Schedule {
+  id: ID!
+  title: String!
+  description: String
+  startTime: Time!
+  endTime: Time!
+  location: String!
+  type: String!
+  createdAt: Time!
+}
+
+extend type Query {
+  schedules(filterType: String): [Schedule!]!
+  scheduleDetail(id: ID!): Schedule
+}

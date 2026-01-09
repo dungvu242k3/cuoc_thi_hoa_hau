@@ -1,0 +1,23 @@
+type Feedback {
+  id: ID!
+  title: String!
+  content: String!
+  type: String!
+  status: String!
+  reply: String
+  createdAt: Time!
+}
+
+input CreateFeedbackInput {
+  title: String!
+  content: String!
+  type: String! # complaint, proposal, support
+}
+
+extend type Query {
+  myFeedbacks: [Feedback!]!
+}
+
+extend type Mutation {
+  sendFeedback(input: CreateFeedbackInput!): Boolean!
+}
