@@ -54,5 +54,5 @@ Frontend là giao diện trang web mà bạn sẽ tương tác.
 
 | Thành phần | Thư mục | Lệnh chạy | Địa chỉ mặc định |
 | :--- | :--- | :--- | :--- |
-| **Backend** | `BE` | `go run cmd/api/main.go` | `http://localhost:8080` |
+| **Backend** | `BE` | `go run cmd/api/main.go`, go run ./cmd/api | `http://localhost:8080` | 
 | **Frontend** | `FE` | `npm run dev` | `http://localhost:5173` |
