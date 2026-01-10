@@ -259,8 +259,8 @@ export const ContestantDashboard = () => {
             className={`
                 group relative flex flex-col items-center justify-center px-4 h-full transition-all duration-300
                 ${activeTab === tab
-                    ? 'text-yellow-400 scale-105'
-                    : 'text-white hover:text-yellow-200'
+                    ? 'text-pink-700 scale-105 font-extrabold drop-shadow-sm'
+                    : 'text-slate-500 hover:text-pink-600 font-semibold'
                 }
             `}
         >
@@ -280,19 +280,19 @@ export const ContestantDashboard = () => {
     };
 
     return (
-        <div className="min-h-screen font-sans text-slate-800 relative overflow-x-hidden">
-            <div className="fixed inset-0 z-0 bg-blue-950/40 backdrop-blur-[2px]" style={{ backgroundImage: "url('/bg-dashboard.jpg')", backgroundSize: 'cover' }}></div>
+        <div className="min-h-screen font-sans text-slate-900 relative overflow-x-hidden">
+            <div className="fixed inset-0 z-0 bg-white/20 backdrop-blur-[1px]" style={{ backgroundImage: "url('/giaodien2.jpeg')", backgroundSize: 'cover' }}></div>
 
             <div className="relative z-10 flex flex-col min-h-screen">
                 {/* Header */}
-                <header className="sticky top-0 z-50 bg-blue-950/50 backdrop-blur-xl border-b border-white/10 shadow-lg">
+                <header className="sticky top-0 z-50 bg-white/10 backdrop-blur-md border-b border-pink-200/20 shadow-sm transition-all duration-300">
                     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex justify-between items-center h-20">
                             <div className="flex items-center space-x-3 group">
-                                <div className="h-11 w-11 bg-gradient-to-br from-yellow-400 to-yellow-600 text-blue-950 rounded-xl flex items-center justify-center font-serif font-bold cursor-pointer">M</div>
+                                <img src="/logoM.png" alt="Miss Beauty Logo" className="h-12 w-auto object-contain cursor-pointer drop-shadow-md hover:scale-105 transition-transform rounded-xl" />
                                 <div className="hidden md:block">
-                                    <h1 className="text-xl font-extrabold text-white uppercase leading-none">Miss Beauty</h1>
-                                    <p className="text-[10px] text-yellow-400 font-bold uppercase mt-1">Vietnam 2026</p>
+                                    <h1 className="text-xl font-extrabold text-pink-900 uppercase leading-none">Miss Beauty</h1>
+                                    <p className="text-[10px] text-pink-600 font-bold uppercase mt-1">Vietnam 2026</p>
                                 </div>
                             </div>
 
@@ -304,9 +304,12 @@ export const ContestantDashboard = () => {
                                 <NavItem tab="stats" label="Kết quả" icon={ChartBarIcon} />
                             </nav>
 
-                            <div className="flex items-center space-x-4">
-                                <p className="text-sm font-bold text-white leading-tight">{profile?.personalInfo?.fullName}</p>
-                                <button onClick={handleLogout} className="p-2.5 rounded-xl text-blue-200 hover:text-white"><LogoutIcon /></button>
+                            <div className="flex items-center space-x-3">
+                                <button onClick={handleLogout} className="px-6 py-3 rounded-full text-pink-600 hover:text-pink-700 hover:bg-pink-100/50 transition-all transform hover:scale-110 active:scale-95 shadow-sm border border-pink-200/50" title="Đăng xuất">
+                                    <div className="scale-125">
+                                        <LogoutIcon />
+                                    </div>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -315,9 +318,9 @@ export const ContestantDashboard = () => {
                 <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mb-20 md:mb-8 w-full">
                     {activeTab === 'overview' && (
                         <div className="animate-fade-in-up">
-                            <div className="relative rounded-3xl overflow-hidden bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl mb-12 p-8 md:p-12 text-white">
+                            <div className="relative rounded-3xl overflow-hidden bg-white/60 backdrop-blur-md border border-pink-100 shadow-2xl mb-12 p-8 md:p-12 text-slate-800 shadow-pink-100/50">
                                 <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
-                                    <div className="relative h-32 w-32 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-5xl font-serif text-white border-2 border-white/50 shadow-inner overflow-hidden">
+                                    <div className="relative h-32 w-32 bg-white/50 backdrop-blur-md rounded-full flex items-center justify-center text-5xl font-serif text-pink-400 border-2 border-pink-200 shadow-inner overflow-hidden">
                                         {profile?.portfolio?.avatarUrl ? (
                                             <img src={getFullImageUrl(profile.portfolio.avatarUrl)} alt="Avatar" className="w-full h-full object-cover" />
                                         ) : (
@@ -326,8 +329,8 @@ export const ContestantDashboard = () => {
                                     </div>
 
                                     <div className="text-center md:text-left flex-1">
-                                        <h2 className="text-4xl md:text-5xl font-serif font-bold mb-2">{profile?.personalInfo?.fullName}</h2>
-                                        <p className="text-blue-50 text-lg font-light mb-6">SBD: {profile?.sbd || "---"}</p>
+                                        <h2 className="text-4xl md:text-5xl font-serif font-bold mb-2 text-pink-900">{profile?.personalInfo?.fullName}</h2>
+                                        <p className="text-pink-700 text-xl font-bold mb-6">SBD: {profile?.sbd || "---"}</p>
                                         <div className="flex gap-2">
                                             {(() => {
                                                 const status = profile?.status?.toLowerCase() || "pending";
@@ -351,57 +354,57 @@ export const ContestantDashboard = () => {
 
                             {/* Announcements Section */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20 shadow-xl text-white">
+                                <div className="bg-white/60 backdrop-blur-md rounded-3xl p-8 border border-pink-100 shadow-xl text-slate-800 shadow-pink-100/50">
                                     <div className="flex items-center gap-3 mb-6">
-                                        <div className="p-2 bg-yellow-400 rounded-lg text-blue-900">
+                                        <div className="p-2 bg-pink-100 rounded-lg text-pink-600">
                                             <BellIcon />
                                         </div>
-                                        <h3 className="text-xl font-serif font-bold">Thông Báo Từ BTC</h3>
+                                        <h3 className="text-xl font-serif font-bold text-pink-900">Thông Báo Từ BTC</h3>
                                     </div>
                                     <div className="space-y-4">
                                         {[
                                             { id: 1, date: "07/01/2026", title: "Chào mừng thí sinh Miss Tourism 2026", content: "Hệ thống đã chính thức mở cổng đăng ký. Vui lòng cập nhật hồ sơ đầy đủ trước ngày 15/01." },
                                             { id: 2, date: "05/01/2026", title: "Hướng dẫn chụp ảnh Profile", content: "Quy định về trang phục và kích thước ảnh đã được cập nhật. Vui lòng xem kỹ hướng dẫn." },
                                         ].map((item) => (
-                                            <div key={item.id} className="bg-white/5 rounded-xl p-4 border border-white/10 hover:bg-white/10 transition-colors cursor-pointer group">
+                                            <div key={item.id} className="bg-white/40 rounded-xl p-4 border border-pink-100 hover:bg-white/60 transition-colors cursor-pointer group">
                                                 <div className="flex justify-between items-start mb-2">
-                                                    <h4 className="font-bold text-yellow-400 group-hover:text-yellow-300">{item.title}</h4>
-                                                    <span className="text-[10px] bg-blue-900/50 px-2 py-1 rounded text-blue-200">{item.date}</span>
+                                                    <h4 className="font-bold text-pink-700 group-hover:text-pink-600">{item.title}</h4>
+                                                    <span className="text-[10px] bg-pink-100 px-2 py-1 rounded text-pink-600">{item.date}</span>
                                                 </div>
-                                                <p className="text-sm text-gray-200 line-clamp-2">{item.content}</p>
+                                                <p className="text-sm text-gray-900 font-medium line-clamp-2">{item.content}</p>
                                             </div>
                                         ))}
                                     </div>
                                 </div>
 
-                                <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20 shadow-xl text-white">
+                                <div className="bg-white/60 backdrop-blur-md rounded-3xl p-8 border border-pink-100 shadow-xl text-slate-800 shadow-pink-100/50">
                                     <div className="flex items-center gap-3 mb-6">
-                                        <div className="p-2 bg-blue-500 rounded-lg text-white">
+                                        <div className="p-2 bg-pink-500 rounded-lg text-white">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0h18M5.25 12h13.5h-13.5zm0 5.25h13.5h-13.5z" />
                                             </svg>
                                         </div>
-                                        <h3 className="text-xl font-serif font-bold">Lịch Trình</h3>
+                                        <h3 className="text-xl font-serif font-bold text-pink-900">Lịch Trình</h3>
                                     </div>
                                     <div className="space-y-4">
                                         <div className="flex gap-4 items-center">
-                                            <div className="flex-shrink-0 w-16 text-center bg-white/5 rounded-lg p-2 border border-white/10">
-                                                <span className="block text-xl font-bold text-yellow-400">20</span>
-                                                <span className="block text-xs uppercase text-blue-200">Tháng 1</span>
+                                            <div className="flex-shrink-0 w-16 text-center bg-white/50 rounded-lg p-2 border border-pink-100 shadow-sm">
+                                                <span className="block text-xl font-bold text-pink-600">20</span>
+                                                <span className="block text-xs uppercase text-gray-900 font-bold">Tháng 1</span>
                                             </div>
                                             <div>
-                                                <h4 className="font-bold text-white">Vòng Sơ Khảo TP.HCM</h4>
-                                                <p className="text-xs text-blue-200">08:00 - Trung tâm Hội nghị Gem Center</p>
+                                                <h4 className="font-bold text-slate-800">Vòng Sơ Khảo TP.HCM</h4>
+                                                <p className="text-xs text-gray-800 font-medium">08:00 - Trung tâm Hội nghị Gem Center</p>
                                             </div>
                                         </div>
                                         <div className="flex gap-4 items-center opacity-70">
-                                            <div className="flex-shrink-0 w-16 text-center bg-white/5 rounded-lg p-2 border border-white/10">
-                                                <span className="block text-xl font-bold text-gray-400">25</span>
-                                                <span className="block text-xs uppercase text-gray-500">Tháng 1</span>
+                                            <div className="flex-shrink-0 w-16 text-center bg-white/50 rounded-lg p-2 border border-pink-100 shadow-sm">
+                                                <span className="block text-xl font-bold text-slate-400">25</span>
+                                                <span className="block text-xs uppercase text-gray-900 font-bold">Tháng 1</span>
                                             </div>
                                             <div>
-                                                <h4 className="font-bold text-white">Vòng Sơ Khảo Hà Nội</h4>
-                                                <p className="text-xs text-blue-200">08:00 - Khách sạn Melia</p>
+                                                <h4 className="font-bold text-slate-700">Vòng Sơ Khảo Hà Nội</h4>
+                                                <p className="text-xs text-gray-800 font-medium">08:00 - Khách sạn Melia</p>
                                             </div>
                                         </div>
                                     </div>
@@ -413,13 +416,13 @@ export const ContestantDashboard = () => {
                     {activeTab === 'profile' && profile && (() => {
                         const canEdit = (profile.status || 'pending').toLowerCase() === 'pending';
                         return (
-                            <div className="animate-fade-in-up bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20 text-white shadow-2xl">
+                            <div className="animate-fade-in-up bg-white/60 backdrop-blur-md rounded-3xl p-8 border border-pink-100 text-slate-800 shadow-2xl shadow-pink-100/50">
                                 <div className="flex justify-between items-center mb-6">
-                                    <h3 className="text-2xl font-serif font-bold">Thông Tin Cá nhân</h3>
+                                    <h3 className="text-2xl font-serif font-bold text-pink-900">Thông Tin Cá nhân</h3>
                                     {canEdit ? (
-                                        <span className="text-sm bg-yellow-400 text-blue-900 px-3 py-1 rounded-full font-bold">Cho phép chỉnh sửa</span>
+                                        <span className="text-sm bg-pink-100 text-pink-700 px-3 py-1 rounded-full font-bold">Cho phép chỉnh sửa</span>
                                     ) : (
-                                        <span className="text-sm bg-red-500 text-white px-3 py-1 rounded-full font-bold">Đã khóa (Chỉ xem)</span>
+                                        <span className="text-sm bg-red-100 text-red-600 px-3 py-1 rounded-full font-bold">Đã khóa (Chỉ xem)</span>
                                     )}
                                 </div>
 
@@ -490,75 +493,75 @@ export const ContestantDashboard = () => {
                                                 )}
                                             </div>
                                             <input type="hidden" name="avatarUrl" value={profile.portfolio?.avatarUrl || ''} />
-                                            <p className="text-sm text-blue-200 mt-3 font-light">Chạm vào hình để thay đổi ảnh đại diện</p>
+                                            <p className="text-sm text-pink-500 mt-3 font-medium italic">Chạm vào hình để thay đổi ảnh đại diện</p>
                                         </div>
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                             {/* 2. Physical Info (Priority) */}
                                             <div className="space-y-4">
-                                                <h4 className="font-bold text-yellow-400 uppercase text-sm border-b border-white/20 pb-2">Chỉ số hình thể</h4>
+                                                <h4 className="font-bold text-pink-600 uppercase text-sm border-b border-pink-100 pb-2">Chỉ số hình thể</h4>
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div>
-                                                        <label className="block text-xs uppercase text-blue-200 mb-1">Chiều cao (cm)</label>
-                                                        <input name="height" type="number" step="0.1" defaultValue={profile.physicalInfo?.height} disabled={!canEdit} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-400 disabled:opacity-50" />
+                                                        <label className="block text-xs uppercase text-slate-500 font-bold mb-1">Chiều cao (cm)</label>
+                                                        <input name="height" type="number" step="0.1" defaultValue={profile.physicalInfo?.height} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800" />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-xs uppercase text-blue-200 mb-1">Cân nặng (kg)</label>
-                                                        <input name="weight" type="number" step="0.1" defaultValue={profile.physicalInfo?.weight} disabled={!canEdit} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-400 disabled:opacity-50" />
+                                                        <label className="block text-xs uppercase text-slate-500 font-bold mb-1">Cân nặng (kg)</label>
+                                                        <input name="weight" type="number" step="0.1" defaultValue={profile.physicalInfo?.weight} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800" />
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <label className="block text-xs uppercase text-blue-200 mb-1">Số đo 3 vòng (cm)</label>
-                                                    <input name="measurements" defaultValue={profile.physicalInfo?.measurements} disabled={!canEdit} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-400 disabled:opacity-50" />
+                                                    <label className="block text-xs uppercase text-slate-500 font-bold mb-1">Số đo 3 vòng (cm)</label>
+                                                    <input name="measurements" defaultValue={profile.physicalInfo?.measurements} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800" />
                                                 </div>
                                             </div>
 
                                             {/* 3. Personal Info */}
                                             <div className="space-y-4">
-                                                <h4 className="font-bold text-yellow-400 uppercase text-sm border-b border-white/20 pb-2">Thông tin cá nhân</h4>
+                                                <h4 className="font-bold text-pink-600 uppercase text-sm border-b border-pink-100 pb-2">Thông tin cá nhân</h4>
                                                 <div>
-                                                    <label className="block text-xs uppercase text-blue-200 mb-1">Họ và tên</label>
-                                                    <input name="fullName" defaultValue={profile.personalInfo?.fullName} disabled={!canEdit} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-400 disabled:opacity-50" />
+                                                    <label className="block text-xs uppercase text-slate-500 font-bold mb-1">Họ và tên</label>
+                                                    <input name="fullName" defaultValue={profile.personalInfo?.fullName} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800" />
                                                 </div>
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div>
-                                                        <label className="block text-xs uppercase text-blue-200 mb-1">Số điện thoại</label>
-                                                        <input name="phone" defaultValue={profile.personalInfo?.phone} disabled={!canEdit} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-400 disabled:opacity-50" />
+                                                        <label className="block text-xs uppercase text-slate-500 font-bold mb-1">Số điện thoại</label>
+                                                        <input name="phone" defaultValue={profile.personalInfo?.phone} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800" />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-xs uppercase text-blue-200 mb-1">Email</label>
-                                                        <input name="email" defaultValue={profile.personalInfo?.email} disabled={!canEdit} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-400 disabled:opacity-50" />
+                                                        <label className="block text-xs uppercase text-slate-500 font-bold mb-1">Email</label>
+                                                        <input name="email" defaultValue={profile.personalInfo?.email} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800" />
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <label className="block text-xs uppercase text-blue-200 mb-1">Địa chỉ</label>
-                                                    <input name="address" defaultValue={profile.personalInfo?.address} disabled={!canEdit} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-400 disabled:opacity-50" />
+                                                    <label className="block text-xs uppercase text-slate-500 font-bold mb-1">Địa chỉ</label>
+                                                    <input name="address" defaultValue={profile.personalInfo?.address} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800" />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-xs uppercase text-blue-200 mb-1">Nghề nghiệp</label>
-                                                    <input name="job" defaultValue={profile.personalInfo?.job} disabled={!canEdit} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-400 disabled:opacity-50" />
+                                                    <label className="block text-xs uppercase text-slate-500 font-bold mb-1">Nghề nghiệp</label>
+                                                    <input name="job" defaultValue={profile.personalInfo?.job} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800" />
                                                 </div>
                                             </div>
 
                                             {/* 4. Social Links (Split) */}
                                             <div className="space-y-4">
-                                                <h4 className="font-bold text-yellow-400 uppercase text-sm border-b border-white/20 pb-2">Mạng xã hội</h4>
+                                                <h4 className="font-bold text-pink-600 uppercase text-sm border-b border-pink-100 pb-2">Mạng xã hội</h4>
                                                 {(() => {
                                                     const links = profile.portfolio?.socialLinks || [];
                                                     const getLink = (keyword: string) => links.find((l: string) => l.toLowerCase().includes(keyword)) || "";
                                                     return (
                                                         <>
                                                             <div>
-                                                                <label className="block text-xs uppercase text-blue-200 mb-1">Facebook</label>
-                                                                <input name="facebook" defaultValue={getLink('facebook')} disabled={!canEdit} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-400 disabled:opacity-50" placeholder="https://facebook.com/..." />
+                                                                <label className="block text-xs uppercase text-slate-500 font-bold mb-1">Facebook</label>
+                                                                <input name="facebook" defaultValue={getLink('facebook')} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800" placeholder="https://facebook.com/..." />
                                                             </div>
                                                             <div>
-                                                                <label className="block text-xs uppercase text-blue-200 mb-1">Instagram</label>
-                                                                <input name="instagram" defaultValue={getLink('instagram')} disabled={!canEdit} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-400 disabled:opacity-50" placeholder="https://instagram.com/..." />
+                                                                <label className="block text-xs uppercase text-slate-500 font-bold mb-1">Instagram</label>
+                                                                <input name="instagram" defaultValue={getLink('instagram')} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800" placeholder="https://instagram.com/..." />
                                                             </div>
                                                             <div>
-                                                                <label className="block text-xs uppercase text-blue-200 mb-1">TikTok</label>
-                                                                <input name="tiktok" defaultValue={getLink('tiktok')} disabled={!canEdit} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-400 disabled:opacity-50" placeholder="https://tiktok.com/..." />
+                                                                <label className="block text-xs uppercase text-slate-500 font-bold mb-1">TikTok</label>
+                                                                <input name="tiktok" defaultValue={getLink('tiktok')} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800" placeholder="https://tiktok.com/..." />
                                                             </div>
                                                         </>
                                                     );
@@ -567,15 +570,15 @@ export const ContestantDashboard = () => {
 
                                             {/* 5. Gallery & Intro */}
                                             <div className="space-y-4">
-                                                <h4 className="font-bold text-yellow-400 uppercase text-sm border-b border-white/20 pb-2">Khác</h4>
+                                                <h4 className="font-bold text-pink-600 uppercase text-sm border-b border-pink-100 pb-2">Khác</h4>
                                                 <div>
-                                                    <label className="block text-xs uppercase text-blue-200 mb-1">Thư viện ảnh (URLs)</label>
-                                                    <textarea name="galleryUrls" rows={3} defaultValue={profile.portfolio?.galleryUrls?.join('\n')} disabled={!canEdit} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-400 disabled:opacity-50" placeholder="Mỗi dòng một link ảnh..." />
+                                                    <label className="block text-xs uppercase text-slate-500 font-bold mb-1">Thư viện ảnh (URLs)</label>
+                                                    <textarea name="galleryUrls" rows={3} defaultValue={profile.portfolio?.galleryUrls?.join('\n')} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800" placeholder="Mỗi dòng một link ảnh..." />
                                                     <p className="text-[10px] text-blue-300 mt-1">Nhập mỗi link trên một dòng</p>
                                                 </div>
                                                 <div>
-                                                    <label className="block text-xs uppercase text-blue-200 mb-1">Giới thiệu bản thân</label>
-                                                    <textarea name="introduction" rows={4} defaultValue={profile.portfolio?.introduction} disabled={!canEdit} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-400 disabled:opacity-50" />
+                                                    <label className="block text-xs uppercase text-slate-500 font-bold mb-1">Giới thiệu bản thân</label>
+                                                    <textarea name="introduction" rows={4} defaultValue={profile.portfolio?.introduction} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800" />
                                                 </div>
                                             </div>
                                         </div>
@@ -596,8 +599,8 @@ export const ContestantDashboard = () => {
                     {activeTab === 'notifications' && (
                         <div className="animate-fade-in-up">
                             <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-2xl font-serif font-bold text-white">Hộp thư hỗ trợ</h3>
-                                <button onClick={() => setIsFeedbackModalOpen(true)} className="bg-yellow-400 hover:bg-yellow-300 text-blue-900 px-4 py-2 rounded-lg font-bold shadow-lg transition-all flex items-center gap-2">
+                                <h3 className="text-2xl font-serif font-bold text-pink-900">Hộp thư hỗ trợ</h3>
+                                <button onClick={() => setIsFeedbackModalOpen(true)} className="bg-pink-600 hover:bg-pink-500 text-white px-4 py-2 rounded-lg font-bold shadow-lg transition-all flex items-center gap-2">
                                     <ChatIcon /> Gửi yêu cầu mới
                                 </button>
                             </div>
@@ -605,25 +608,25 @@ export const ContestantDashboard = () => {
                             {loadingFeedbacks ? (
                                 <div className="text-center text-white py-12">Đang tải dữ liệu...</div>
                             ) : feedbacks.length === 0 ? (
-                                <div className="text-center text-blue-200 py-12 bg-white/5 rounded-3xl border border-white/10">
+                                <div className="text-center text-slate-500 py-12 bg-white/30 rounded-3xl border border-pink-100">
                                     <p className="text-lg">Bạn chưa gửi yêu cầu hỗ trợ nào.</p>
                                     <p className="text-sm mt-2">Nếu cần giúp đỡ, hãy nhấn nút "Gửi yêu cầu mới".</p>
                                 </div>
                             ) : (
                                 <div className="space-y-4">
                                     {feedbacks.map((item: any) => (
-                                        <div key={item.id} className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 shadow-lg text-white">
-                                            <div className="flex flex-col md:flex-row justify-between gap-4 mb-4 border-b border-white/10 pb-4">
+                                        <div key={item.id} className="bg-white/60 backdrop-blur-md rounded-2xl p-6 border border-pink-100 shadow-lg text-slate-800">
+                                            <div className="flex flex-col md:flex-row justify-between gap-4 mb-4 border-b border-pink-100 pb-4">
                                                 <div>
                                                     <div className="flex items-center gap-3">
                                                         {item.status === 'reply' ? (
-                                                            <span className="bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded uppercase">Đã phản hồi</span>
+                                                            <span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-1 rounded uppercase">Đã phản hồi</span>
                                                         ) : (
-                                                            <span className="bg-yellow-500/50 text-yellow-100 text-[10px] font-bold px-2 py-1 rounded uppercase">Đang xử lý</span>
+                                                            <span className="bg-yellow-100 text-yellow-700 text-[10px] font-bold px-2 py-1 rounded uppercase">Đang xử lý</span>
                                                         )}
-                                                        <h4 className="font-bold text-lg text-yellow-50">{item.title}</h4>
+                                                        <h4 className="font-bold text-lg text-pink-900">{item.title}</h4>
                                                     </div>
-                                                    <p className="text-xs text-blue-200 mt-1">Gửi lúc: {new Date(item.createdAt).toLocaleString('vi-VN')}</p>
+                                                    <p className="text-xs text-slate-500 mt-1">Gửi lúc: {new Date(item.createdAt).toLocaleString('vi-VN')}</p>
                                                 </div>
                                                 <div>
                                                     <span className="text-xs uppercase tracking-wider font-bold opacity-70 border border-white/30 px-2 py-1 rounded">
@@ -633,16 +636,16 @@ export const ContestantDashboard = () => {
                                             </div>
 
                                             <div className="space-y-4">
-                                                <div className="bg-black/20 p-4 rounded-xl">
-                                                    <p className="font-bold text-xs text-blue-300 mb-1">Nội dung gửi:</p>
-                                                    <p className="text-sm whitespace-pre-wrap">{item.content}</p>
+                                                <div className="bg-slate-50 border border-slate-100 p-4 rounded-xl">
+                                                    <p className="font-bold text-xs text-slate-400 mb-1">Nội dung gửi:</p>
+                                                    <p className="text-sm text-slate-700 whitespace-pre-wrap">{item.content}</p>
                                                 </div>
 
                                                 {item.reply && (
-                                                    <div className="bg-green-900/40 border border-green-500/30 p-4 rounded-xl ml-8 relative">
-                                                        <div className="absolute -left-2 top-4 w-4 h-4 bg-green-900/40 border-l border-b border-green-500/30 transform rotate-45"></div>
-                                                        <p className="font-bold text-xs text-green-300 mb-1">Phản hồi từ BTC:</p>
-                                                        <p className="text-sm text-white whitespace-pre-wrap">{item.reply}</p>
+                                                    <div className="bg-green-50 border border-green-200 p-4 rounded-xl ml-8 relative">
+                                                        <div className="absolute -left-2 top-4 w-4 h-4 bg-green-50 border-l border-b border-green-200 transform rotate-45"></div>
+                                                        <p className="font-bold text-xs text-green-600 mb-1">Phản hồi từ BTC:</p>
+                                                        <p className="text-sm text-slate-800 whitespace-pre-wrap">{item.reply}</p>
                                                     </div>
                                                 )}
                                             </div>
@@ -671,27 +674,27 @@ export const ContestantDashboard = () => {
                             ) : (
                                 <div className="space-y-6">
                                     {scores.map((score: any) => (
-                                        <div key={score.id} className="bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20 shadow-2xl text-white">
-                                            <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
+                                        <div key={score.id} className="bg-white/60 backdrop-blur-md rounded-3xl p-8 border border-pink-100 shadow-2xl text-slate-800 shadow-pink-100/50">
+                                            <div className="flex justify-between items-center mb-6 border-b border-pink-100 pb-4">
                                                 <div>
-                                                    <h4 className="text-xl font-bold text-yellow-400 uppercase tracking-widest">{score.roundId}</h4>
-                                                    <p className="text-xs text-blue-200 mt-1">SBD: {score.sbd}</p>
+                                                    <h4 className="text-xl font-bold text-pink-600 uppercase tracking-widest">{score.roundId}</h4>
+                                                    <p className="text-xs text-slate-500 mt-1">SBD: {score.sbd}</p>
                                                 </div>
                                                 <div className="text-center">
-                                                    <div className="text-4xl font-serif font-bold text-white">{score.totalScore.toFixed(1)}</div>
-                                                    <div className="text-[10px] uppercase text-blue-200">Tổng điểm</div>
+                                                    <div className="text-4xl font-serif font-bold text-pink-700">{score.totalScore.toFixed(1)}</div>
+                                                    <div className="text-[10px] uppercase text-slate-500">Tổng điểm</div>
                                                 </div>
                                             </div>
 
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                                 {/* Criteria Breakdown */}
                                                 <div>
-                                                    <h5 className="font-bold text-sm text-blue-200 uppercase mb-4 border-b border-white/10 pb-2">Chi tiết điểm thành phần</h5>
+                                                    <h5 className="font-bold text-sm text-slate-400 uppercase mb-4 border-b border-pink-100 pb-2">Chi tiết điểm thành phần</h5>
                                                     <div className="space-y-3">
                                                         {Object.entries(score.criteriaScores || {}).map(([key, value]: [string, any]) => (
-                                                            <div key={key} className="flex justify-between items-center bg-white/5 px-4 py-2 rounded-lg">
-                                                                <span className="text-sm font-medium text-gray-100 capitalize">{key.replace(/_/g, ' ')}</span>
-                                                                <span className="font-bold text-yellow-400">{Number(value).toFixed(1)}</span>
+                                                            <div key={key} className="flex justify-between items-center bg-white/40 px-4 py-2 rounded-lg border border-pink-50">
+                                                                <span className="text-sm font-medium text-slate-700 capitalize">{key.replace(/_/g, ' ')}</span>
+                                                                <span className="font-bold text-rose-500">{Number(value).toFixed(1)}</span>
                                                             </div>
                                                         ))}
                                                     </div>
@@ -699,14 +702,14 @@ export const ContestantDashboard = () => {
 
                                                 {/* Judge Comments */}
                                                 <div>
-                                                    <h5 className="font-bold text-sm text-blue-200 uppercase mb-4 border-b border-white/10 pb-2">Nhận xét từ Ban Giám Khảo</h5>
+                                                    <h5 className="font-bold text-sm text-slate-400 uppercase mb-4 border-b border-pink-100 pb-2">Nhận xét từ Ban Giám Khảo</h5>
                                                     {score.comment ? (
-                                                        <div className="bg-gradient-to-br from-blue-900/40 to-black/20 p-6 rounded-2xl border border-white/10 relative">
-                                                            <svg className="absolute top-4 left-4 w-6 h-6 text-white/10" viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21L14.017 18C14.017 16.8954 13.1216 16 12.017 16H9C9 14.9391 9.39063 13.9189 10.0933 13.1553C10.8252 12.3599 11.8385 11.8741 12.9175 11.8105L14.017 11.724L14.017 9.17647L12.7231 9.25547C10.9168 9.36629 9.17482 10.1504 7.91508 11.5192C6.67138 12.8706 5.99997 14.6534 5.99997 16.5V21H14.017ZM21 21L21 18C21 16.8954 20.1046 16 19 16H15.983C15.983 14.9391 16.3736 13.9189 17.0763 13.1553C17.8082 12.3599 18.8215 11.8741 19.9005 11.8105L21 11.724L21 9.17647L19.7061 9.25547C17.8998 9.36629 16.1578 10.1504 14.8981 11.5192C13.6544 12.8706 12.983 14.6534 12.983 16.5V21H21Z" /></svg>
-                                                            <p className="text-sm text-gray-200 italic leading-relaxed pl-2 relative z-10">"{score.comment}"</p>
+                                                        <div className="bg-pink-50/50 p-6 rounded-2xl border border-pink-100 relative">
+                                                            <svg className="absolute top-4 left-4 w-6 h-6 text-pink-200" viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21L14.017 18C14.017 16.8954 13.1216 16 12.017 16H9C9 14.9391 9.39063 13.9189 10.0933 13.1553C10.8252 12.3599 11.8385 11.8741 12.9175 11.8105L14.017 11.724L14.017 9.17647L12.7231 9.25547C10.9168 9.36629 9.17482 10.1504 7.91508 11.5192C6.67138 12.8706 5.99997 14.6534 5.99997 16.5V21H14.017ZM21 21L21 18C21 16.8954 20.1046 16 19 16H15.983C15.983 14.9391 16.3736 13.9189 17.0763 13.1553C17.8082 12.3599 18.8215 11.8741 19.9005 11.8105L21 11.724L21 9.17647L19.7061 9.25547C17.8998 9.36629 16.1578 10.1504 14.8981 11.5192C13.6544 12.8706 12.983 14.6534 12.983 16.5V21H21Z" /></svg>
+                                                            <p className="text-sm text-slate-600 italic leading-relaxed pl-2 relative z-10">"{score.comment}"</p>
                                                         </div>
                                                     ) : (
-                                                        <p className="text-sm text-gray-400 italic">Không có nhận xét nào.</p>
+                                                        <p className="text-sm text-slate-400 italic">Không có nhận xét nào.</p>
                                                     )}
                                                 </div>
                                             </div>
