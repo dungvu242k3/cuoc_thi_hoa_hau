@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # --- Backend Service (Go) ---
+  backend:
+    build:
+      context: ./BE
+      dockerfile: Dockerfile
+    container_name: beauty_contest_be
+    restart: unless-stopped
+    ports:
+      - "8080:8080" # Maps container 8080 to host 8080
+    environment:
+      - PORT=8080
+      - MONGODB_URI=mongodb://mongo:27017
+      - REDIS_ADDR=redis:6379
+      - REDIS_PASSWORD=
+      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8080
+      # Add JWT_SECRET or others if needed
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - app-network
+
+  # --- Frontend Service (React/Vite/Nginx) ---
+  frontend:
+    build:
+      context: ./FE
+      dockerfile: Dockerfile
+      args:
+        # Passes the API URL to Vite build process
+        - VITE_API_URL=http://localhost:8080
+    container_name: beauty_contest_fe
+    restart: unless-stopped
+    ports:
+      - "3000:80" # Maps Nginx port 80 to host 3000
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  # --- Database Service (MongoDB) ---
+  mongo:
+    image: mongo:latest
+    container_name: beauty_contest_mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - app-network
+
+  # --- Cache Service (Redis) ---
+  redis:
+    image: redis:alpine
+    container_name: beauty_contest_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongo_data:
+  redis_data:
