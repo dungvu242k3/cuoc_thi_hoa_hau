@@ -6,7 +6,7 @@ import (
 	"cuoc_thi_hoa_hau/internal/adapter/graph/generated"
 	mw "cuoc_thi_hoa_hau/internal/adapter/graph/middleware"
 	"cuoc_thi_hoa_hau/internal/adapter/graph/resolver"
-	filesHandler "cuoc_thi_hoa_hau/internal/adapter/handler"
+	handlers "cuoc_thi_hoa_hau/internal/adapter/handler"
 	"cuoc_thi_hoa_hau/internal/adapter/infra/security"
 	"cuoc_thi_hoa_hau/internal/adapter/storage/local"
 	"cuoc_thi_hoa_hau/internal/adapter/storage/mongodb"
@@ -30,6 +30,7 @@ import (
 )
 
 func main() {
+	log.Println("Starting API server...")
 	// 1. Config & Dependencies
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -45,8 +46,14 @@ func main() {
 	}
 	redisPassword := os.Getenv("REDIS_PASSWORD")
 	jwtSecret := os.Getenv("JWT_SECRET")
+	appEnv := os.Getenv("APP_ENV")
+
 	if jwtSecret == "" {
+		if appEnv == "production" {
+			log.Fatal("JWT_SECRET must be set in production")
+		}
 		jwtSecret = "default-secret-key-change-me"
+		log.Println("WARNING: Using default JWT secret (unsafe for production)")
 	}
 
 	// 2. Database
@@ -59,11 +66,10 @@ func main() {
 	redisClient := cache.NewRedisAdapter(redisAddr, redisPassword, 0)
 
 	// 3. Repos & Services
-	// 3. Repos & Services
 	contestantRepo := mongodb.NewContestantRepo(db)
 	userRepo := mongodb.NewUserRepo(db)
 	feedbackRepo := mongodb.NewFeedbackRepo(db)
-	scoreRepo := mongodb.NewScoreRepo(db) // Init Score Repo
+	scoreRepo := mongodb.NewScoreRepo(db)
 
 	// Security Adapters
 	hasher := security.NewBcryptHasher()
@@ -72,14 +78,14 @@ func main() {
 	contestantSvc := service.NewContestantService(contestantRepo)
 	authSvc := service.NewAuthService(userRepo, hasher, tokenProvider)
 	feedbackSvc := service.NewFeedbackService(feedbackRepo)
-	scoreSvc := service.NewScoringService(scoreRepo, contestantRepo) // Init Score Service
+	scoreSvc := service.NewScoringService(scoreRepo, contestantRepo)
 
 	// 4. GraphQL Resolver
 	srvResolver := &resolver.Resolver{
 		ContestantSvc: contestantSvc,
 		AuthSvc:       authSvc,
 		FeedbackSvc:   feedbackSvc,
-		ScoreSvc:      scoreSvc, // Inject Score Service
+		ScoreSvc:      scoreSvc,
 		CacheSvc:      redisClient,
 	}
 
@@ -92,9 +98,16 @@ func main() {
 	// Production hardening: Error Presenter to mask internal errors
 	srv.SetErrorPresenter(func(ctx context.Context, e error) *gqlerror.Error {
 		err := graphql.DefaultErrorPresenter(ctx, e)
-		// Mask internal server errors but allow "public" errors
-		// For now, we trust the defaults but you can filter here.
-		// Example: if err.Extensions["code"] == "INTERNAL_SERVER_ERROR" { err.Message = "Internal Server Error" }
+
+		// If it's a GraphQL internal error, mask it
+		if strings.Contains(err.Message, "internal") || strings.Contains(err.Message, "mongo") || strings.Contains(err.Message, "redis") {
+			// Don't mask in dev
+			if appEnv != "production" {
+				return err
+			}
+			err.Message = "Internal Server Error"
+		}
+
 		return err
 	})
 
@@ -103,11 +116,26 @@ func main() {
 	// CORS configuration (MUST be first to handle OPTIONS requests)
 	allowedOrigins := strings.Split(os.Getenv("ALLOWED_ORIGINS"), ",")
 	if len(allowedOrigins) == 0 || allowedOrigins[0] == "" {
-		allowedOrigins = []string{"http://localhost:5173", "http://localhost:3000", "https://*", "http://*"}
+		// Default to local development if not set
+		allowedOrigins = []string{"http://localhost:5173", "http://localhost:3000"}
+	}
+
+	// Create map for faster lookup
+	allowedOriginsMap := make(map[string]bool)
+	for _, origin := range allowedOrigins {
+		allowedOriginsMap[strings.TrimSpace(origin)] = true
 	}
 
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   allowedOrigins,
+		// AllowedOrigins:   allowedOrigins, // Disable static list to allow dynamic IPs
+		AllowOriginFunc: func(r *http.Request, origin string) bool {
+			// In dev, allow everything if strict mode not enforced?
+			// Better to respect the map.
+			if appEnv != "production" && (origin == "http://localhost:5173" || origin == "http://localhost:3000") {
+				return true
+			}
+			return allowedOriginsMap[origin]
+		},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
@@ -118,6 +146,7 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(mw.Middleware(tokenProvider))
+	r.Use(mw.ClientInfoMiddleware) // Extract IP/UA
 	r.Use(mw.RateLimitMiddleware(redisClient))
 
 	// 6. File Storage Setup (Production Ready: Interface-based)
@@ -139,7 +168,11 @@ func main() {
 	}
 
 	localStorage := local.NewLocalStorage(uploadDir, "/uploads")
-	fileHandler := filesHandler.NewFileHandler(localStorage)
+	fileHandler := handlers.NewFileHandler(localStorage)
+
+	authHandler := handlers.NewAuthHandler(authSvc)
+	r.Post("/api/register-audience", authHandler.RegisterAudience)
+	r.Post("/api/login-audience", authHandler.LoginAudience)
 
 	// Register Upload Handler
 	r.Post("/upload", fileHandler.UploadFile)

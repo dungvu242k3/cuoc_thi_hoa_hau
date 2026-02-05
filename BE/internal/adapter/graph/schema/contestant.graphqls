@@ -10,6 +10,7 @@ type Contestant {
   portfolio: Portfolio
   createdAt: Time!
   updatedAt: Time!
+  voteCount: Int!
 }
 
 type PersonalInfo {
@@ -47,6 +48,7 @@ type Portfolio {
 input CreateContestantInput {
   fullName: String!
   dob: String!
+  gender: String!
   nationality: String!
   identityCard: String
   phone: String!
@@ -68,6 +70,7 @@ input CreateContestantInput {
 input UpdateContestantInput {
   fullName: String
   dob: String
+  gender: String
   nationality: String
   job: String
   phone: String
@@ -89,9 +92,16 @@ extend type Query {
   myProfile: Contestant
   publicContestants(page: Int = 1, limit: Int = 20): [Contestant!]!
   publicContestantDetail(id: ID!): Contestant
+  
+  # Admin/Examiner only
+  adminContestants(page: Int = 1, limit: Int = 20, status: String): [Contestant!]!
 }
 
 extend type Mutation {
   createContestantProfile(input: CreateContestantInput!): Contestant!
   updateContestantProfile(input: UpdateContestantInput!): Contestant!
+  
+  # Approval Workflow
+  approveContestant(id: ID!, isApproved: Boolean!): Contestant!
+  voteForContestant(id: ID!): Boolean!
 }

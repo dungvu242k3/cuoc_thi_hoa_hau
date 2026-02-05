@@ -24,11 +24,13 @@ type Contestant struct {
 	Portfolio      *Portfolio      `json:"portfolio,omitempty"`
 	CreatedAt      time.Time       `json:"createdAt"`
 	UpdatedAt      time.Time       `json:"updatedAt"`
+	VoteCount      int             `json:"voteCount"`
 }
 
 type CreateContestantInput struct {
 	FullName       string   `json:"fullName"`
 	Dob            string   `json:"dob"`
+	Gender         string   `json:"gender"`
 	Nationality    string   `json:"nationality"`
 	IdentityCard   *string  `json:"identityCard,omitempty"`
 	Phone          string   `json:"phone"`
@@ -108,12 +110,20 @@ type Schedule struct {
 
 type Score struct {
 	ID             string         `json:"id"`
+	ContestantID   string         `json:"contestantId"`
 	RoundID        string         `json:"roundId"`
 	Sbd            string         `json:"sbd"`
 	TotalScore     float64        `json:"totalScore"`
 	CriteriaScores map[string]any `json:"criteriaScores,omitempty"`
 	Comment        *string        `json:"comment,omitempty"`
 	CreatedAt      time.Time      `json:"createdAt"`
+}
+
+type ScoreInput struct {
+	ContestantID   string         `json:"contestantId"`
+	Sbd            string         `json:"sbd"`
+	CriteriaScores map[string]any `json:"criteriaScores"`
+	Comment        *string        `json:"comment,omitempty"`
 }
 
 type SkillEducation struct {
@@ -125,6 +135,7 @@ type SkillEducation struct {
 type UpdateContestantInput struct {
 	FullName       *string  `json:"fullName,omitempty"`
 	Dob            *string  `json:"dob,omitempty"`
+	Gender         *string  `json:"gender,omitempty"`
 	Nationality    *string  `json:"nationality,omitempty"`
 	Job            *string  `json:"job,omitempty"`
 	Phone          *string  `json:"phone,omitempty"`

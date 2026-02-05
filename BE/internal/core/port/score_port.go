@@ -7,9 +7,11 @@ import (
 
 type ScoreRepository interface {
 	GetListByCandidateID(ctx context.Context, candidateID string) ([]*domain.Score, error)
+	GetListByExaminerID(ctx context.Context, examinerID string) ([]*domain.Score, error)
 	Upsert(ctx context.Context, score *domain.Score) error
 }
 
 type ScoreService interface {
 	GetMyScores(ctx context.Context, userID string) ([]*domain.Score, error)
+	SubmitScore(ctx context.Context, examinerID string, score *domain.Score, ip, ua string) error
 }

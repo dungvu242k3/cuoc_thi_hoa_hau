@@ -40,8 +40,28 @@ func (r *scoreRepo) GetListByCandidateID(ctx context.Context, candidateID string
 	return scores, nil
 }
 
+func (r *scoreRepo) GetListByExaminerID(ctx context.Context, examinerID string) ([]*domain.Score, error) {
+	filter := bson.M{"examiner_id": examinerID}
+
+	cursor, err := r.collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var scores []*domain.Score
+	if err = cursor.All(ctx, &scores); err != nil {
+		return nil, err
+	}
+
+	return scores, nil
+}
+
 func (r *scoreRepo) Upsert(ctx context.Context, score *domain.Score) error {
-	filter := bson.M{"contestant_id": score.ContestantID}
+	filter := bson.M{
+		"contestant_id": score.ContestantID,
+		"examiner_id":   score.ExaminerID,
+	}
 	update := bson.M{
 		"$set": score,
 	}

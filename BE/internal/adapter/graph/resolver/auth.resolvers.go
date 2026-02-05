@@ -8,6 +8,7 @@ package resolver
 import (
 	"context"
 	"cuoc_thi_hoa_hau/internal/adapter/graph/model"
+	"cuoc_thi_hoa_hau/internal/core/domain"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -15,9 +16,57 @@ import (
 	"unicode"
 )
 
-func validateAuthInput(username, password string) error {
-	if len(username) < 3 {
-		return errors.New("username must be at least 3 characters")
+// Login is the resolver for the login field.
+func (r *mutationResolver) Login(ctx context.Context, email string, password string) (*model.AuthPayload, error) {
+	// 1. Rate Limiting
+	if err := r.checkRateLimit(ctx, "login", email); err != nil {
+		slog.Warn("Rate limit exceeded", "action", "login", "email", email)
+		return nil, err
+	}
+
+	// 2. Validate
+	if err := validateAuthInput(email, password); err != nil {
+		return nil, err
+	}
+
+	// 3. Call Service
+	claims, token, err := r.AuthSvc.Login(ctx, email, password)
+	if err != nil {
+		slog.Warn("Failed login attempt", "email", email, "error", err.Error())
+		return nil, errors.New("invalid credentials")
+	}
+
+	return &model.AuthPayload{
+		Token:  token,
+		UserID: claims.UserID,
+		Role:   claims.Role,
+	}, nil
+}
+
+// Register is the resolver for the register field.
+func (r *mutationResolver) Register(ctx context.Context, email string, password string) (*model.AuthPayload, error) {
+	// 1. Validate
+	if err := validateAuthInput(email, password); err != nil {
+		return nil, err
+	}
+
+	// 2. Call Service
+	claims, token, err := r.AuthSvc.Register(ctx, email, password, string(domain.RoleCandidate))
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.AuthPayload{
+		Token:  token,
+		UserID: claims.UserID,
+		Role:   claims.Role,
+	}, nil
+}
+
+// Helper function to validate authentication input
+func validateAuthInput(email, password string) error {
+	if len(email) < 3 {
+		return errors.New("email must be at least 3 characters")
 	}
 
 	if len(password) < 8 {
@@ -51,6 +100,7 @@ func validateAuthInput(username, password string) error {
 	return nil
 }
 
+// Helper method to check rate limiting for authentication operations
 func (r *mutationResolver) checkRateLimit(ctx context.Context, action, key string) error {
 	if r.CacheSvc == nil {
 		return nil // skip if cache not available (dev mode)
@@ -72,47 +122,4 @@ func (r *mutationResolver) checkRateLimit(ctx context.Context, action, key strin
 		return errors.New("too many attempts, please try again later")
 	}
 	return nil
-}
-
-// Login is the resolver for the login field.
-func (r *mutationResolver) Login(ctx context.Context, username string, password string) (*model.AuthPayload, error) {
-	// 1. Rate Limiting
-	if err := r.checkRateLimit(ctx, "login", username); err != nil {
-		slog.Warn("Rate limit exceeded", "action", "login", "username", username)
-		return nil, err
-	}
-
-	// 2. Validate
-	if err := validateAuthInput(username, password); err != nil {
-		return nil, err
-	}
-
-	// 3. Call Service
-	_, token, err := r.AuthSvc.Login(ctx, username, password)
-	if err != nil {
-		slog.Warn("Failed login attempt", "username", username, "error", err.Error())
-		return nil, errors.New("invalid credentials")
-	}
-
-	return &model.AuthPayload{
-		Token: token,
-	}, nil
-}
-
-// Register is the resolver for the register field.
-func (r *mutationResolver) Register(ctx context.Context, username string, password string) (*model.AuthPayload, error) {
-	// 1. Validate
-	if err := validateAuthInput(username, password); err != nil {
-		return nil, err
-	}
-
-	// 2. Call Service
-	_, token, err := r.AuthSvc.Register(ctx, username, password)
-	if err != nil {
-		return nil, err
-	}
-
-	return &model.AuthPayload{
-		Token: token,
-	}, nil
 }

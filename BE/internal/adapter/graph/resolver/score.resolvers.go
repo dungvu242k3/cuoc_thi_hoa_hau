@@ -13,17 +13,44 @@ import (
 	"errors"
 )
 
-// MyScores is the resolver for the myScores field.
+// SubmitScore is the resolver for the submitScore field.
+func (r *mutationResolver) SubmitScore(ctx context.Context, input model.ScoreInput) (*model.Score, error) {
+	// 1. Check Permission (RBAC)
+	if err := middleware.RequirePermission(ctx, domain.PermScoreWrite); err != nil {
+		return nil, err
+	}
+
+	// 2. Get User ID
+	userID := middleware.ForContext(ctx)
+	if userID == "" {
+		return nil, errors.New("unauthorized")
+	}
+
+	// 3. Map Input
+	score := ToDomainScore(input)
+
+	// 4. Get Client Info
+	ip, ua := middleware.GetClientInfo(ctx)
+
+	// 5. Call Service
+	if err := r.ScoreSvc.SubmitScore(ctx, userID, score, ip, ua); err != nil {
+		return nil, err
+	}
+
+	// 5. Return
+	return ToGraphScore(score), nil
+}
+
 // MyScores is the resolver for the myScores field.
 func (r *queryResolver) MyScores(ctx context.Context) ([]*model.Score, error) {
-	// 1. Auth Check
-	user, ok := ctx.Value(middleware.UserCtxKey).(*domain.AuthClaims)
-	if !ok {
+	// 1. Auth Check - Using consistent retrieval from context
+	userID := middleware.ForContext(ctx)
+	if userID == "" {
 		return nil, errors.New("unauthorized: vui lòng đăng nhập")
 	}
 
 	// 2. Call Service
-	scores, err := r.ScoreSvc.GetMyScores(ctx, user.UserID)
+	scores, err := r.ScoreSvc.GetMyScores(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -31,69 +58,8 @@ func (r *queryResolver) MyScores(ctx context.Context) ([]*model.Score, error) {
 	// 3. Map Domain -> Model
 	var result []*model.Score
 	for _, s := range scores {
-		// Convert CriteriaScores
-		criteria := make(map[string]any)
-		for k, v := range s.CriteriaScores {
-			criteria[k] = v
-		}
-
-		// Convert Comment string to *string
-		var commentPtr *string
-		if s.Comment != "" {
-			commentVal := s.Comment
-			commentPtr = &commentVal
-		}
-
-		result = append(result, &model.Score{
-			ID:             s.ID,
-			RoundID:        s.RoundID,
-			Sbd:            s.SBD,
-			TotalScore:     s.TotalScore,
-			CriteriaScores: criteria,
-			Comment:        commentPtr,
-			CreatedAt:      s.CreatedAt,
-		})
+		result = append(result, ToGraphScore(s))
 	}
 
 	return result, nil
 }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-/*
-	func (r *queryResolver) MyScore(ctx context.Context) (*model.ScoreDetail, error) {
-	// Auth Check
-	user, ok := ctx.Value(middleware.UserCtxKey).(*domain.AuthClaims)
-	if !ok {
-		return nil, errors.New("unauthorized: vui lòng đăng nhập")
-	}
-
-	//Call Service
-	score, err := r.ScoringService.GetMyScore(ctx, user.UserID)
-	if err != nil {
-		return nil, err
-	}
-
-	if score == nil {
-		return nil, nil
-	}
-
-	// Map Domain -> Model
-	var details []*model.ScoreCriterion
-	for k, v := range score.Details {
-		details = append(details, &model.ScoreCriterion{
-			Key:   k,
-			Value: v,
-		})
-	}
-
-	return &model.ScoreDetail{
-		TotalScore: score.TotalScore,
-		Details:    details,
-	}, nil
-}
-*/

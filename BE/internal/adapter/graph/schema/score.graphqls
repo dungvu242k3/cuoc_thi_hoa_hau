@@ -1,5 +1,6 @@
 type Score {
   id: ID!
+  contestantId: String!
   roundId: String!
   sbd: String!
   totalScore: Float!
@@ -12,4 +13,15 @@ scalar Map
 
 extend type Query {
   myScores: [Score!]!
+}
+
+input ScoreInput {
+  contestantId: String!
+  sbd: String!
+  criteriaScores: Map!
+  comment: String
+}
+
+extend type Mutation {
+  submitScore(input: ScoreInput!): Score!
 }

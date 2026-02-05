@@ -31,12 +31,17 @@ func (s *contestantService) CreateProfile(ctx context.Context, userID string, in
 	}
 
 	// Check Tuổi Chiều cao
+	const (
+		MinAge    = 18
+		MinHeight = 160.0
+	)
+
 	age := time.Now().Year() - input.PersonalInfo.DateOfBirth.Year()
-	if age < 18 {
-		return nil, errors.New("thí sinh phải đủ 18 tuổi")
+	if age < MinAge {
+		return nil, fmt.Errorf("thí sinh phải đủ %d tuổi", MinAge)
 	}
-	if input.PhysicalInfo.Height < 160 {
-		return nil, errors.New("chiều cao phải trên 1m60")
+	if input.PhysicalInfo.Height < MinHeight {
+		return nil, fmt.Errorf("chiều cao phải trên %.0fcm", MinHeight)
 	}
 
 	// Setup Default
@@ -183,4 +188,85 @@ func (s *contestantService) DeleteProfile(ctx context.Context, userID string) er
 
 	// Assuming Update handles replacing the record including status
 	return s.repo.Update(ctx, current)
+}
+
+// Admin
+func (s *contestantService) ApproveContestant(ctx context.Context, sub string, id string, isApproved bool) (*domain.Contestant, error) {
+	// 1. Get contestant
+	current, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if current == nil {
+		return nil, errors.New("hồ sơ không tồn tại")
+	}
+
+	// 2. Update Status
+	if isApproved {
+		current.Status = domain.ContestantStatusApproved
+		current.IsPublic = true
+	} else {
+		current.Status = domain.ContestantStatusRejected
+		current.IsPublic = false // Hidden if rejected
+	}
+	current.UpdatedAt = time.Now()
+
+	// 3. Log Audit (Important for Production)
+	log.Printf("[AUDIT] User %s change status of contestant %s to %v", sub, id, isApproved)
+
+	if err := s.repo.Update(ctx, current); err != nil {
+		return nil, err
+	}
+	return current, nil
+}
+
+func (s *contestantService) GetAdminList(ctx context.Context, limit int64, offset int64, status *string) ([]*domain.Contestant, int64, error) {
+	filter := make(map[string]interface{})
+
+	if status != nil {
+		filter["status"] = *status
+	}
+
+	return s.repo.GetList(ctx, limit, offset, filter)
+}
+
+func (s *contestantService) VoteForContestant(ctx context.Context, userID, id, ip, userAgent string) error {
+	// 0. Check Contestant Status (Only Approved ones can receive votes)
+	current, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	if current == nil {
+		return errors.New("thí sinh không tồn tại")
+	}
+	if current.Status != domain.ContestantStatusApproved {
+		return errors.New("chỉ có thể bình chọn cho thí sinh đã qua vòng duyệt hồ sơ")
+	}
+
+	// 1. Check IP Limit (Strict: 1 vote per IP per Contestant per 24h)
+	// Calculated in the Repository layer via creation date filtering
+	limitReached, err := s.repo.CheckIPLimit(ctx, ip, id)
+	if err != nil {
+		return err
+	}
+	if limitReached {
+		return errors.New("địa chỉ IP này đã bình chọn cho thí sinh này rồi")
+	}
+
+	// 2. Check if user has already voted for this contestant
+	hasVoted, err := s.repo.HasVoted(ctx, userID, id)
+	if err != nil {
+		return err
+	}
+	if hasVoted {
+		return errors.New("bạn đã bình chọn cho thí sinh này rồi")
+	}
+
+	// 3. Record Vote History
+	if err := s.repo.RecordVote(ctx, userID, id, ip, userAgent); err != nil {
+		return err
+	}
+
+	// 4. Increment Vote Count
+	return s.repo.IncrementVote(ctx, id)
 }

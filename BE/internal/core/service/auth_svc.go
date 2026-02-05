@@ -25,7 +25,7 @@ func NewAuthService(repo port.UserRepository, passwordEncoder port.PasswordEncod
 	}
 }
 
-func (s *AuthService) Register(ctx context.Context, username, password string) (*domain.AuthClaims, string, error) {
+func (s *AuthService) Register(ctx context.Context, username, password, role string) (*domain.AuthClaims, string, error) {
 	// 1. Hash Password
 	hashed, err := s.passwordEncoder.Hash(password)
 	if err != nil {
@@ -36,7 +36,7 @@ func (s *AuthService) Register(ctx context.Context, username, password string) (
 	user := &domain.User{
 		Username: username,
 		Password: hashed,
-		Role:     domain.RoleCandidate,
+		RoleID:   role,
 	}
 	// 3. Create User (Atomic Insert)
 	if err := s.repo.Create(ctx, user); err != nil {

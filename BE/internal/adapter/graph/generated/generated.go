@@ -65,6 +65,7 @@ type ComplexityRoot struct {
 		Status         func(childComplexity int) int
 		UpdatedAt      func(childComplexity int) int
 		UserID         func(childComplexity int) int
+		VoteCount      func(childComplexity int) int
 	}
 
 	Feedback struct {
@@ -78,12 +79,15 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		ApproveContestant       func(childComplexity int, id string, isApproved bool) int
 		CreateContestantProfile func(childComplexity int, input model.CreateContestantInput) int
 		Login                   func(childComplexity int, email string, password string) int
 		Ping                    func(childComplexity int) int
 		Register                func(childComplexity int, email string, password string) int
 		SendFeedback            func(childComplexity int, input model.CreateFeedbackInput) int
+		SubmitScore             func(childComplexity int, input model.ScoreInput) int
 		UpdateContestantProfile func(childComplexity int, input model.UpdateContestantInput) int
+		VoteForContestant       func(childComplexity int, id string) int
 	}
 
 	PersonalInfo struct {
@@ -113,6 +117,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		AdminContestants       func(childComplexity int, page *int, limit *int, status *string) int
 		Health                 func(childComplexity int) int
 		MyFeedbacks            func(childComplexity int) int
 		MyProfile              func(childComplexity int) int
@@ -136,6 +141,7 @@ type ComplexityRoot struct {
 
 	Score struct {
 		Comment        func(childComplexity int) int
+		ContestantID   func(childComplexity int) int
 		CreatedAt      func(childComplexity int) int
 		CriteriaScores func(childComplexity int) int
 		ID             func(childComplexity int) int
@@ -157,13 +163,17 @@ type MutationResolver interface {
 	Register(ctx context.Context, email string, password string) (*model.AuthPayload, error)
 	CreateContestantProfile(ctx context.Context, input model.CreateContestantInput) (*model.Contestant, error)
 	UpdateContestantProfile(ctx context.Context, input model.UpdateContestantInput) (*model.Contestant, error)
+	ApproveContestant(ctx context.Context, id string, isApproved bool) (*model.Contestant, error)
+	VoteForContestant(ctx context.Context, id string) (bool, error)
 	SendFeedback(ctx context.Context, input model.CreateFeedbackInput) (bool, error)
+	SubmitScore(ctx context.Context, input model.ScoreInput) (*model.Score, error)
 }
 type QueryResolver interface {
 	Health(ctx context.Context) (*string, error)
 	MyProfile(ctx context.Context) (*model.Contestant, error)
 	PublicContestants(ctx context.Context, page *int, limit *int) ([]*model.Contestant, error)
 	PublicContestantDetail(ctx context.Context, id string) (*model.Contestant, error)
+	AdminContestants(ctx context.Context, page *int, limit *int, status *string) ([]*model.Contestant, error)
 	MyFeedbacks(ctx context.Context) ([]*model.Feedback, error)
 	Schedules(ctx context.Context, filterType *string) ([]*model.Schedule, error)
 	ScheduleDetail(ctx context.Context, id string) (*model.Schedule, error)
@@ -274,6 +284,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Contestant.UserID(childComplexity), true
+	case "Contestant.voteCount":
+		if e.complexity.Contestant.VoteCount == nil {
+			break
+		}
+
+		return e.complexity.Contestant.VoteCount(childComplexity), true
 
 	case "Feedback.content":
 		if e.complexity.Feedback.Content == nil {
@@ -318,6 +334,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Feedback.Type(childComplexity), true
 
+	case "Mutation.approveContestant":
+		if e.complexity.Mutation.ApproveContestant == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_approveContestant_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ApproveContestant(childComplexity, args["id"].(string), args["isApproved"].(bool)), true
 	case "Mutation.createContestantProfile":
 		if e.complexity.Mutation.CreateContestantProfile == nil {
 			break
@@ -368,6 +395,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.SendFeedback(childComplexity, args["input"].(model.CreateFeedbackInput)), true
+	case "Mutation.submitScore":
+		if e.complexity.Mutation.SubmitScore == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_submitScore_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.SubmitScore(childComplexity, args["input"].(model.ScoreInput)), true
 	case "Mutation.updateContestantProfile":
 		if e.complexity.Mutation.UpdateContestantProfile == nil {
 			break
@@ -379,6 +417,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.UpdateContestantProfile(childComplexity, args["input"].(model.UpdateContestantInput)), true
+	case "Mutation.voteForContestant":
+		if e.complexity.Mutation.VoteForContestant == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_voteForContestant_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.VoteForContestant(childComplexity, args["id"].(string)), true
 
 	case "PersonalInfo.address":
 		if e.complexity.PersonalInfo.Address == nil {
@@ -485,6 +534,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Portfolio.VideoURL(childComplexity), true
 
+	case "Query.adminContestants":
+		if e.complexity.Query.AdminContestants == nil {
+			break
+		}
+
+		args, err := ec.field_Query_adminContestants_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.AdminContestants(childComplexity, args["page"].(*int), args["limit"].(*int), args["status"].(*string)), true
 	case "Query.health":
 		if e.complexity.Query.Health == nil {
 			break
@@ -609,6 +669,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Score.Comment(childComplexity), true
+	case "Score.contestantId":
+		if e.complexity.Score.ContestantID == nil {
+			break
+		}
+
+		return e.complexity.Score.ContestantID(childComplexity), true
 	case "Score.createdAt":
 		if e.complexity.Score.CreatedAt == nil {
 			break
@@ -675,6 +741,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputCreateContestantInput,
 		ec.unmarshalInputCreateFeedbackInput,
+		ec.unmarshalInputScoreInput,
 		ec.unmarshalInputUpdateContestantInput,
 	)
 	first := true
@@ -796,6 +863,7 @@ extend type Mutation {
   portfolio: Portfolio
   createdAt: Time!
   updatedAt: Time!
+  voteCount: Int!
 }
 
 type PersonalInfo {
@@ -832,7 +900,8 @@ type Portfolio {
 
 input CreateContestantInput {
   fullName: String!
-  dob: String! # ISO Date
+  dob: String!
+  gender: String!
   nationality: String!
   identityCard: String
   phone: String!
@@ -854,6 +923,7 @@ input CreateContestantInput {
 input UpdateContestantInput {
   fullName: String
   dob: String
+  gender: String
   nationality: String
   job: String
   phone: String
@@ -875,11 +945,18 @@ extend type Query {
   myProfile: Contestant
   publicContestants(page: Int = 1, limit: Int = 20): [Contestant!]!
   publicContestantDetail(id: ID!): Contestant
+  
+  # Admin/Examiner only
+  adminContestants(page: Int = 1, limit: Int = 20, status: String): [Contestant!]!
 }
 
 extend type Mutation {
   createContestantProfile(input: CreateContestantInput!): Contestant!
   updateContestantProfile(input: UpdateContestantInput!): Contestant!
+  
+  # Approval Workflow
+  approveContestant(id: ID!, isApproved: Boolean!): Contestant!
+  voteForContestant(id: ID!): Boolean!
 }`, BuiltIn: false},
 	{Name: "../schema/feedback.graphqls", Input: `type Feedback {
   id: ID!
@@ -933,6 +1010,7 @@ type Mutation {
 `, BuiltIn: false},
 	{Name: "../schema/score.graphqls", Input: `type Score {
   id: ID!
+  contestantId: String!
   roundId: String!
   sbd: String!
   totalScore: Float!
@@ -946,6 +1024,17 @@ scalar Map
 extend type Query {
   myScores: [Score!]!
 }
+
+input ScoreInput {
+  contestantId: String!
+  sbd: String!
+  criteriaScores: Map!
+  comment: String
+}
+
+extend type Mutation {
+  submitScore(input: ScoreInput!): Score!
+}
 `, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -953,6 +1042,22 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_approveContestant_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id", ec.unmarshalNID2string)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "isApproved", ec.unmarshalNBoolean2bool)
+	if err != nil {
+		return nil, err
+	}
+	args["isApproved"] = arg1
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_createContestantProfile_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
@@ -1008,6 +1113,17 @@ func (ec *executionContext) field_Mutation_sendFeedback_args(ctx context.Context
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_submitScore_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNScoreInput2cuoc_thi_hoa_hauᚋinternalᚋadapterᚋgraphᚋmodelᚐScoreInput)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_updateContestantProfile_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -1019,6 +1135,17 @@ func (ec *executionContext) field_Mutation_updateContestantProfile_args(ctx cont
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_voteForContestant_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id", ec.unmarshalNID2string)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -1027,6 +1154,27 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		return nil, err
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_adminContestants_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "page", ec.unmarshalOInt2ᚖint)
+	if err != nil {
+		return nil, err
+	}
+	args["page"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "limit", ec.unmarshalOInt2ᚖint)
+	if err != nil {
+		return nil, err
+	}
+	args["limit"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "status", ec.unmarshalOString2ᚖstring)
+	if err != nil {
+		return nil, err
+	}
+	args["status"] = arg2
 	return args, nil
 }
 
@@ -1585,6 +1733,35 @@ func (ec *executionContext) fieldContext_Contestant_updatedAt(_ context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _Contestant_voteCount(ctx context.Context, field graphql.CollectedField, obj *model.Contestant) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Contestant_voteCount,
+		func(ctx context.Context) (any, error) {
+			return obj.VoteCount, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Contestant_voteCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Contestant",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Feedback_id(ctx context.Context, field graphql.CollectedField, obj *model.Feedback) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -1962,6 +2139,8 @@ func (ec *executionContext) fieldContext_Mutation_createContestantProfile(ctx co
 				return ec.fieldContext_Contestant_createdAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_Contestant_updatedAt(ctx, field)
+			case "voteCount":
+				return ec.fieldContext_Contestant_voteCount(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Contestant", field.Name)
 		},
@@ -2027,6 +2206,8 @@ func (ec *executionContext) fieldContext_Mutation_updateContestantProfile(ctx co
 				return ec.fieldContext_Contestant_createdAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_Contestant_updatedAt(ctx, field)
+			case "voteCount":
+				return ec.fieldContext_Contestant_voteCount(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Contestant", field.Name)
 		},
@@ -2039,6 +2220,114 @@ func (ec *executionContext) fieldContext_Mutation_updateContestantProfile(ctx co
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_updateContestantProfile_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_approveContestant(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_approveContestant,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Mutation().ApproveContestant(ctx, fc.Args["id"].(string), fc.Args["isApproved"].(bool))
+		},
+		nil,
+		ec.marshalNContestant2ᚖcuoc_thi_hoa_hauᚋinternalᚋadapterᚋgraphᚋmodelᚐContestant,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_approveContestant(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Contestant_id(ctx, field)
+			case "userId":
+				return ec.fieldContext_Contestant_userId(ctx, field)
+			case "sbd":
+				return ec.fieldContext_Contestant_sbd(ctx, field)
+			case "status":
+				return ec.fieldContext_Contestant_status(ctx, field)
+			case "isPublic":
+				return ec.fieldContext_Contestant_isPublic(ctx, field)
+			case "personalInfo":
+				return ec.fieldContext_Contestant_personalInfo(ctx, field)
+			case "physicalInfo":
+				return ec.fieldContext_Contestant_physicalInfo(ctx, field)
+			case "skillEducation":
+				return ec.fieldContext_Contestant_skillEducation(ctx, field)
+			case "portfolio":
+				return ec.fieldContext_Contestant_portfolio(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Contestant_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Contestant_updatedAt(ctx, field)
+			case "voteCount":
+				return ec.fieldContext_Contestant_voteCount(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Contestant", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_approveContestant_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_voteForContestant(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_voteForContestant,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Mutation().VoteForContestant(ctx, fc.Args["id"].(string))
+		},
+		nil,
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_voteForContestant(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_voteForContestant_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -2080,6 +2369,65 @@ func (ec *executionContext) fieldContext_Mutation_sendFeedback(ctx context.Conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_sendFeedback_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_submitScore(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_submitScore,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Mutation().SubmitScore(ctx, fc.Args["input"].(model.ScoreInput))
+		},
+		nil,
+		ec.marshalNScore2ᚖcuoc_thi_hoa_hauᚋinternalᚋadapterᚋgraphᚋmodelᚐScore,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_submitScore(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Score_id(ctx, field)
+			case "contestantId":
+				return ec.fieldContext_Score_contestantId(ctx, field)
+			case "roundId":
+				return ec.fieldContext_Score_roundId(ctx, field)
+			case "sbd":
+				return ec.fieldContext_Score_sbd(ctx, field)
+			case "totalScore":
+				return ec.fieldContext_Score_totalScore(ctx, field)
+			case "criteriaScores":
+				return ec.fieldContext_Score_criteriaScores(ctx, field)
+			case "comment":
+				return ec.fieldContext_Score_comment(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Score_createdAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Score", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_submitScore_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -2654,6 +3002,8 @@ func (ec *executionContext) fieldContext_Query_myProfile(_ context.Context, fiel
 				return ec.fieldContext_Contestant_createdAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_Contestant_updatedAt(ctx, field)
+			case "voteCount":
+				return ec.fieldContext_Contestant_voteCount(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Contestant", field.Name)
 		},
@@ -2708,6 +3058,8 @@ func (ec *executionContext) fieldContext_Query_publicContestants(ctx context.Con
 				return ec.fieldContext_Contestant_createdAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_Contestant_updatedAt(ctx, field)
+			case "voteCount":
+				return ec.fieldContext_Contestant_voteCount(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Contestant", field.Name)
 		},
@@ -2773,6 +3125,8 @@ func (ec *executionContext) fieldContext_Query_publicContestantDetail(ctx contex
 				return ec.fieldContext_Contestant_createdAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_Contestant_updatedAt(ctx, field)
+			case "voteCount":
+				return ec.fieldContext_Contestant_voteCount(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Contestant", field.Name)
 		},
@@ -2785,6 +3139,73 @@ func (ec *executionContext) fieldContext_Query_publicContestantDetail(ctx contex
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_publicContestantDetail_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_adminContestants(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_adminContestants,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Query().AdminContestants(ctx, fc.Args["page"].(*int), fc.Args["limit"].(*int), fc.Args["status"].(*string))
+		},
+		nil,
+		ec.marshalNContestant2ᚕᚖcuoc_thi_hoa_hauᚋinternalᚋadapterᚋgraphᚋmodelᚐContestantᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_adminContestants(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Contestant_id(ctx, field)
+			case "userId":
+				return ec.fieldContext_Contestant_userId(ctx, field)
+			case "sbd":
+				return ec.fieldContext_Contestant_sbd(ctx, field)
+			case "status":
+				return ec.fieldContext_Contestant_status(ctx, field)
+			case "isPublic":
+				return ec.fieldContext_Contestant_isPublic(ctx, field)
+			case "personalInfo":
+				return ec.fieldContext_Contestant_personalInfo(ctx, field)
+			case "physicalInfo":
+				return ec.fieldContext_Contestant_physicalInfo(ctx, field)
+			case "skillEducation":
+				return ec.fieldContext_Contestant_skillEducation(ctx, field)
+			case "portfolio":
+				return ec.fieldContext_Contestant_portfolio(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Contestant_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Contestant_updatedAt(ctx, field)
+			case "voteCount":
+				return ec.fieldContext_Contestant_voteCount(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Contestant", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_adminContestants_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -2980,6 +3401,8 @@ func (ec *executionContext) fieldContext_Query_myScores(_ context.Context, field
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Score_id(ctx, field)
+			case "contestantId":
+				return ec.fieldContext_Score_contestantId(ctx, field)
 			case "roundId":
 				return ec.fieldContext_Score_roundId(ctx, field)
 			case "sbd":
@@ -3363,6 +3786,35 @@ func (ec *executionContext) fieldContext_Score_id(_ context.Context, field graph
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Score_contestantId(ctx context.Context, field graphql.CollectedField, obj *model.Score) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Score_contestantId,
+		func(ctx context.Context) (any, error) {
+			return obj.ContestantID, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Score_contestantId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Score",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5082,7 +5534,7 @@ func (ec *executionContext) unmarshalInputCreateContestantInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"fullName", "dob", "nationality", "identityCard", "phone", "email", "address", "job", "height", "weight", "measurements", "educationLevel", "languages", "skills", "avatarUrl", "galleryUrls", "introduction", "socialLinks"}
+	fieldsInOrder := [...]string{"fullName", "dob", "gender", "nationality", "identityCard", "phone", "email", "address", "job", "height", "weight", "measurements", "educationLevel", "languages", "skills", "avatarUrl", "galleryUrls", "introduction", "socialLinks"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5103,6 +5555,13 @@ func (ec *executionContext) unmarshalInputCreateContestantInput(ctx context.Cont
 				return it, err
 			}
 			it.Dob = data
+		case "gender":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("gender"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Gender = data
 		case "nationality":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nationality"))
 			data, err := ec.unmarshalNString2string(ctx, v)
@@ -5262,6 +5721,54 @@ func (ec *executionContext) unmarshalInputCreateFeedbackInput(ctx context.Contex
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputScoreInput(ctx context.Context, obj any) (model.ScoreInput, error) {
+	var it model.ScoreInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"contestantId", "sbd", "criteriaScores", "comment"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "contestantId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contestantId"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ContestantID = data
+		case "sbd":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sbd"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Sbd = data
+		case "criteriaScores":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("criteriaScores"))
+			data, err := ec.unmarshalNMap2map(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CriteriaScores = data
+		case "comment":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("comment"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Comment = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUpdateContestantInput(ctx context.Context, obj any) (model.UpdateContestantInput, error) {
 	var it model.UpdateContestantInput
 	asMap := map[string]any{}
@@ -5269,7 +5776,7 @@ func (ec *executionContext) unmarshalInputUpdateContestantInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"fullName", "dob", "nationality", "job", "phone", "email", "address", "height", "weight", "measurements", "educationLevel", "languages", "skills", "avatarUrl", "galleryUrls", "introduction", "socialLinks"}
+	fieldsInOrder := [...]string{"fullName", "dob", "gender", "nationality", "job", "phone", "email", "address", "height", "weight", "measurements", "educationLevel", "languages", "skills", "avatarUrl", "galleryUrls", "introduction", "socialLinks"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5290,6 +5797,13 @@ func (ec *executionContext) unmarshalInputUpdateContestantInput(ctx context.Cont
 				return it, err
 			}
 			it.Dob = data
+		case "gender":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("gender"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Gender = data
 		case "nationality":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nationality"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -5401,6 +5915,14 @@ func (ec *executionContext) unmarshalInputUpdateContestantInput(ctx context.Cont
 	return it, nil
 }
 
+// endregion **************************** input.gotpl *****************************
+
+// region    ************************** interface.gotpl ***************************
+
+// endregion ************************** interface.gotpl ***************************
+
+// region    **************************** object.gotpl ****************************
+
 var authPayloadImplementors = []string{"AuthPayload"}
 
 func (ec *executionContext) _AuthPayload(ctx context.Context, sel ast.SelectionSet, obj *model.AuthPayload) graphql.Marshaler {
@@ -5501,6 +6023,11 @@ func (ec *executionContext) _Contestant(ctx context.Context, sel ast.SelectionSe
 			}
 		case "updatedAt":
 			out.Values[i] = ec._Contestant_updatedAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "voteCount":
+			out.Values[i] = ec._Contestant_voteCount(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -5644,9 +6171,30 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "approveContestant":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_approveContestant(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "voteForContestant":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_voteForContestant(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "sendFeedback":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_sendFeedback(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "submitScore":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_submitScore(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -5920,6 +6468,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "adminContestants":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_adminContestants(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "myFeedbacks":
 			field := field
 
@@ -6120,6 +6690,11 @@ func (ec *executionContext) _Score(ctx context.Context, sel ast.SelectionSet, ob
 			out.Values[i] = graphql.MarshalString("Score")
 		case "id":
 			out.Values[i] = ec._Score_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "contestantId":
+			out.Values[i] = ec._Score_contestantId(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -6729,6 +7304,44 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 	return res
 }
 
+func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v any) (int, error) {
+	res, err := graphql.UnmarshalInt(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	_ = sel
+	res := graphql.MarshalInt(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalNMap2map(ctx context.Context, v any) (map[string]any, error) {
+	res, err := graphql.UnmarshalMap(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNMap2map(ctx context.Context, sel ast.SelectionSet, v map[string]any) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	_ = sel
+	res := graphql.MarshalMap(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
 func (ec *executionContext) marshalNPersonalInfo2ᚖcuoc_thi_hoa_hauᚋinternalᚋadapterᚋgraphᚋmodelᚐPersonalInfo(ctx context.Context, sel ast.SelectionSet, v *model.PersonalInfo) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -6793,6 +7406,10 @@ func (ec *executionContext) marshalNSchedule2ᚖcuoc_thi_hoa_hauᚋinternalᚋad
 	return ec._Schedule(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNScore2cuoc_thi_hoa_hauᚋinternalᚋadapterᚋgraphᚋmodelᚐScore(ctx context.Context, sel ast.SelectionSet, v model.Score) graphql.Marshaler {
+	return ec._Score(ctx, sel, &v)
+}
+
 func (ec *executionContext) marshalNScore2ᚕᚖcuoc_thi_hoa_hauᚋinternalᚋadapterᚋgraphᚋmodelᚐScoreᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Score) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -6845,6 +7462,11 @@ func (ec *executionContext) marshalNScore2ᚖcuoc_thi_hoa_hauᚋinternalᚋadapt
 		return graphql.Null
 	}
 	return ec._Score(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNScoreInput2cuoc_thi_hoa_hauᚋinternalᚋadapterᚋgraphᚋmodelᚐScoreInput(ctx context.Context, v any) (model.ScoreInput, error) {
+	res, err := ec.unmarshalInputScoreInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v any) (string, error) {

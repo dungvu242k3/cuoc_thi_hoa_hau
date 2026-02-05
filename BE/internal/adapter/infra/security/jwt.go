@@ -20,9 +20,9 @@ func NewJWTProvider(secret string) *JWTProvider {
 
 func (p *JWTProvider) Generate(user *domain.User, duration time.Duration) (*domain.AuthClaims, string, error) {
 	claims := jwt.MapClaims{
-		"user_id": user.ID,
-		"role":    user.Role,
-		"exp":     time.Now().Add(duration).Unix(),
+		domain.ClaimKeyUserID: user.ID,
+		domain.ClaimKeyRole:   user.RoleID,
+		domain.ClaimKeyExp:    time.Now().Add(duration).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -33,11 +33,11 @@ func (p *JWTProvider) Generate(user *domain.User, duration time.Duration) (*doma
 
 	return &domain.AuthClaims{
 		UserID: user.ID,
-		Role:   user.Role,
+		Role:   user.RoleID,
 	}, tokenStr, nil
 }
 
-func (p *JWTProvider) Validate(tokenString string) (jwt.MapClaims, error) {
+func (p *JWTProvider) Validate(tokenString string) (*domain.AuthClaims, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -50,7 +50,13 @@ func (p *JWTProvider) Validate(tokenString string) (jwt.MapClaims, error) {
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		return claims, nil
+		userID, _ := claims[domain.ClaimKeyUserID].(string)
+		role, _ := claims[domain.ClaimKeyRole].(string)
+
+		return &domain.AuthClaims{
+			UserID: userID,
+			Role:   role,
+		}, nil
 	}
 
 	return nil, fmt.Errorf("invalid token")

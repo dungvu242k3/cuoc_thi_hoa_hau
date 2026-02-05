@@ -5,6 +5,7 @@ import (
 	"cuoc_thi_hoa_hau/internal/core/domain"
 	"errors"
 	"log"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -17,8 +18,24 @@ type ContestantRepo struct {
 }
 
 func NewContestantRepo(db *mongo.Database) *ContestantRepo {
+	coll := db.Collection("contestants")
+
+	// Ensure Indexes for Scaling
+	go func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		indices := []mongo.IndexModel{
+			{Keys: bson.D{{Key: "is_public", Value: 1}}},
+			{Keys: bson.D{{Key: "sbd", Value: 1}, {Key: "is_public", Value: 1}}},
+			{Keys: bson.D{{Key: "user_id", Value: 1}}},
+			{Keys: bson.D{{Key: "created_at", Value: -1}}},
+		}
+		coll.Indexes().CreateMany(ctx, indices)
+	}()
+
 	return &ContestantRepo{
-		coll: db.Collection("contestants"),
+		coll: coll,
 	}
 }
 
@@ -129,4 +146,80 @@ func (r *ContestantRepo) CheckIdentifyCard(ctx context.Context, cardID string) (
 
 func (r *ContestantRepo) Count(ctx context.Context) (int64, error) {
 	return r.coll.CountDocuments(ctx, bson.M{})
+}
+
+func (r *ContestantRepo) GetList(ctx context.Context, limit, offset int64, filter map[string]interface{}) ([]*domain.Contestant, int64, error) {
+	// Convert filter to bson.M
+	bsonFilter := bson.M{}
+	for k, v := range filter {
+		bsonFilter[k] = v
+	}
+
+	opts := options.Find().SetLimit(limit).SetSkip(offset).SetSort(bson.M{"created_at": -1})
+
+	cursor, err := r.coll.Find(ctx, bsonFilter, opts)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer cursor.Close(ctx)
+
+	var results []*domain.Contestant
+	if err = cursor.All(ctx, &results); err != nil {
+		return nil, 0, err
+	}
+
+	total, _ := r.coll.CountDocuments(ctx, bsonFilter)
+	return results, total, nil
+}
+
+func (r *ContestantRepo) IncrementVote(ctx context.Context, id string) error {
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+	filter := bson.M{"_id": oid}
+	update := bson.M{"$inc": bson.M{"vote_count": 1}}
+	_, err = r.coll.UpdateOne(ctx, filter, update)
+	return err
+}
+
+func (r *ContestantRepo) HasVoted(ctx context.Context, userID, contestantID string) (bool, error) {
+	filter := bson.M{
+		"user_id":       userID,
+		"contestant_id": contestantID,
+	}
+	count, err := r.coll.Database().Collection("vote_histories").CountDocuments(ctx, filter)
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
+func (r *ContestantRepo) CheckIPLimit(ctx context.Context, ip string, contestantID string) (bool, error) {
+	// Daily limit: Only count votes in the last 24 hours
+	oneDayAgo := time.Now().Add(-24 * time.Hour)
+	filter := bson.M{
+		"ip_address":    ip,
+		"contestant_id": contestantID,
+		"created_at":    bson.M{"$gte": oneDayAgo},
+	}
+	count, err := r.coll.Database().Collection("vote_histories").CountDocuments(ctx, filter)
+	if err != nil {
+		return false, err
+	}
+	return count >= 1, nil
+}
+
+func (r *ContestantRepo) RecordVote(ctx context.Context, userID, contestantID, ip, userAgent string) error {
+	doc := bson.M{
+		"user_id":       userID,
+		"contestant_id": contestantID,
+		"ip_address":    ip,
+		"user_agent":    userAgent,
+		"created_at":    time.Now(),
+	}
+	// Create index if not exists to ensure uniqueness (best effort, ideally done once at startup)
+	// For now, we rely on application logic + unique index
+	_, err := r.coll.Database().Collection("vote_histories").InsertOne(ctx, doc)
+	return err
 }

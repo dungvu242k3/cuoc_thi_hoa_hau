@@ -23,6 +23,7 @@ type Contestant struct {
 	PhysicalInfo PhysicalInfo   `bson:"physical_info" json:"physicalInfo"`
 	SkillEdu     SkillEducation `bson:"skill_edu" json:"skillEducation"`
 	Portfolio    Portfolio      `bson:"portfolio" json:"portfolio"`
+	VoteCount    int64          `bson:"vote_count" json:"voteCount"`
 
 	CreatedAt time.Time `bson:"created_at" json:"createdAt"`
 	UpdatedAt time.Time `bson:"updated_at" json:"updatedAt"`

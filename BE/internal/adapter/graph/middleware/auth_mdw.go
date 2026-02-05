@@ -39,18 +39,8 @@ func Middleware(tokenProvider port.TokenProvider) func(http.Handler) http.Handle
 				return
 			}
 
-			// Extract user info
-			userID, _ := claims["user_id"].(string)
-			roleStr, _ := claims["role"].(string)
-			role := domain.Role(roleStr)
-
-			authClaims := &domain.AuthClaims{
-				UserID: userID,
-				Role:   role,
-			}
-
 			// Put into context
-			ctx := context.WithValue(r.Context(), UserCtxKey, authClaims)
+			ctx := context.WithValue(r.Context(), UserCtxKey, claims)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
@@ -64,13 +54,27 @@ func ForContext(ctx context.Context) string {
 	return raw.UserID
 }
 
+// RequireRole is the old way (kept for backward compatibility)
 func RequireRole(ctx context.Context, role domain.Role) error {
 	raw, _ := ctx.Value(UserCtxKey).(*domain.AuthClaims)
 	if raw == nil {
 		return fmt.Errorf("unauthorized")
 	}
-	if raw.Role != role && raw.Role != domain.RoleAdmin { // Admin bypass
+	if raw.Role != string(role) && raw.Role != string(domain.RoleAdmin) { // Admin bypass
 		return fmt.Errorf("forbidden: requires %s", role)
 	}
 	return nil
+}
+
+func RequirePermission(ctx context.Context, requiredPerm string) error {
+	raw, _ := ctx.Value(UserCtxKey).(*domain.AuthClaims)
+	if raw == nil {
+		return fmt.Errorf("unauthorized")
+	}
+
+	if domain.HasPermission(raw.Role, requiredPerm) {
+		return nil
+	}
+
+	return fmt.Errorf("forbidden: requires permission %s", requiredPerm)
 }

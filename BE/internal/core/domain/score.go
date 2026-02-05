@@ -15,4 +15,8 @@ type Score struct {
 
 	CreatedAt time.Time `bson:"created_at" json:"createdAt"`
 	UpdatedAt time.Time `bson:"updated_at" json:"updatedAt"`
+
+	// Audit fields
+	IP        string `bson:"ip" json:"ip"`
+	UserAgent string `bson:"user_agent" json:"userAgent"`
 }

@@ -16,6 +16,12 @@ type ContestantRepository interface {
 	GetPublicDetail(ctx context.Context, id string) (*domain.Contestant, error)
 	CheckIdentifyCard(ctx context.Context, cardID string) (bool, error)
 	Count(ctx context.Context) (int64, error)
+	// Admin
+	GetList(ctx context.Context, limit, offset int64, filter map[string]interface{}) ([]*domain.Contestant, int64, error)
+	IncrementVote(ctx context.Context, id string) error
+	HasVoted(ctx context.Context, userID, contestantID string) (bool, error)
+	RecordVote(ctx context.Context, userID, contestantID, ip, userAgent string) error
+	CheckIPLimit(ctx context.Context, ip string, contestantID string) (bool, error)
 }
 
 // Service Interface
@@ -27,4 +33,9 @@ type ContestantService interface {
 	DeleteProfile(ctx context.Context, userID string) error
 	GetPublicList(ctx context.Context, limit int64, offset int64) ([]*domain.Contestant, int64, error)
 	GetPublicDetail(ctx context.Context, id string) (*domain.Contestant, error)
+
+	// Admin
+	ApproveContestant(ctx context.Context, sub string, id string, isApproved bool) (*domain.Contestant, error)
+	GetAdminList(ctx context.Context, limit int64, offset int64, status *string) ([]*domain.Contestant, int64, error)
+	VoteForContestant(ctx context.Context, userID, id, ip, userAgent string) error
 }

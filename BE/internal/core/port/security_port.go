@@ -3,8 +3,6 @@ package port
 import (
 	"cuoc_thi_hoa_hau/internal/core/domain"
 	"time"
-
-	"github.com/golang-jwt/jwt/v5"
 )
 
 type PasswordEncoder interface {
@@ -14,5 +12,5 @@ type PasswordEncoder interface {
 
 type TokenProvider interface {
 	Generate(user *domain.User, duration time.Duration) (*domain.AuthClaims, string, error)
-	Validate(tokenString string) (jwt.MapClaims, error)
+	Validate(tokenString string) (*domain.AuthClaims, error)
 }

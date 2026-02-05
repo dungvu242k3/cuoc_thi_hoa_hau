@@ -6,6 +6,6 @@ import (
 )
 
 type AuthService interface {
-	Register(ctx context.Context, username, password string) (*domain.AuthClaims, string, error)
+	Register(ctx context.Context, username, password, role string) (*domain.AuthClaims, string, error)
 	Login(ctx context.Context, username, password string) (*domain.AuthClaims, string, error)
 }

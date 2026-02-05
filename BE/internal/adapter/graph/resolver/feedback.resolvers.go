@@ -17,7 +17,7 @@ import (
 func (r *mutationResolver) SendFeedback(ctx context.Context, input model.CreateFeedbackInput) (bool, error) {
 	// 1. Auth Check: Only Candidates can complain/propose
 	user, ok := ctx.Value(middleware.UserCtxKey).(*domain.AuthClaims)
-	if !ok || user.Role != domain.RoleCandidate {
+	if !ok || user.Role != string(domain.RoleCandidate) {
 		return false, errors.New("bạn không có quyền thực hiện hành động này")
 	}
 
