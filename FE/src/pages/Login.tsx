@@ -1,10 +1,9 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-// Note: We'll use basic fetch for now, can perform cleanup later to use a proper query hook
-// Ideally we should use URQL or Apollo for GQL, but sticking to simple fetch for demo if not set up
 
 import { apiRequest } from "../lib/api";
+import { useAuthStore } from "../store/useAuthStore";
 
 const LOGIN_MUTATION = `
 mutation Login($email: String!, $password: String!) {
@@ -20,6 +19,7 @@ interface LoginFormData {
 }
 
 export const Login = () => {
+    const { login } = useAuthStore();
     const { register, handleSubmit } = useForm<LoginFormData>();
     const [error, setError] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -30,11 +30,20 @@ export const Login = () => {
         try {
             const result = await apiRequest(LOGIN_MUTATION, { email: data.email, password: data.password });
             const token = result.login.token;
-            localStorage.setItem("token", token);
 
-            // Redirect to dashboard
-            navigate({ to: "/contestant" });
-            window.location.href = "/contestant";
+            // 1. Update Global State & Persist
+            login(token);
+
+            // 2. Read back from store to decide navigation (store is synchronous)
+            // Or parse specifically for redirect decision to be fast/explicit
+            const { role } = useAuthStore.getState();
+
+            if (role === "examiner") {
+                navigate({ to: "/examiner", search: { tab: "scoring" } });
+            } else {
+                navigate({ to: "/contestant" });
+            }
+
         } catch (err: any) {
             setError(err.message || "Failed to login");
         }
@@ -43,11 +52,11 @@ export const Login = () => {
     return (
         <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-cover bg-center" style={{ backgroundImage: "url('/login.jpeg')" }}>
             <div className="max-w-4xl w-full bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden flex shadow-slate-200/50">
-                {/* Left Side: Image */}
+
                 <div className="hidden md:block w-1/2 bg-cover bg-center" style={{ backgroundImage: "url('/1.jpeg')" }}>
                 </div>
 
-                {/* Right Side: Form */}
+
                 <div className="w-full md:w-1/2 p-8 md:p-12 lg:p-16 flex flex-col justify-center relative">
                     <div className="sm:mx-auto sm:w-full sm:max-w-md">
                         <h2 className="mt-2 text-center text-3xl font-extrabold tracking-tight text-gray-900">

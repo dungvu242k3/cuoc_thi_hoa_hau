@@ -9,14 +9,27 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VoteRouteImport } from './routes/vote'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ContestantRouteImport } from './routes/contestant'
+import { Route as ExaminerRouteRouteImport } from './routes/examiner/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as VoteIndexRouteImport } from './routes/vote/index'
+import { Route as ExaminerIndexRouteImport } from './routes/examiner/index'
 import { Route as ContestantIndexRouteImport } from './routes/contestant/index'
+import { Route as VoteDanhSachThiSinhRouteImport } from './routes/vote/danh-sach-thi-sinh'
+import { Route as VoteBangXepHangRouteImport } from './routes/vote/bang-xep-hang'
+import { Route as VoteAuthRouteImport } from './routes/vote/auth'
 import { Route as ContestantRegisterRouteImport } from './routes/contestant/register'
 import { Route as ContestantDashboardRouteImport } from './routes/contestant/dashboard'
+import { Route as ExaminerScoreContestantIdRouteImport } from './routes/examiner/score.$contestantId'
 
+const VoteRoute = VoteRouteImport.update({
+  id: '/vote',
+  path: '/vote',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
@@ -32,15 +45,45 @@ const ContestantRoute = ContestantRouteImport.update({
   path: '/contestant',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExaminerRouteRoute = ExaminerRouteRouteImport.update({
+  id: '/examiner',
+  path: '/examiner',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VoteIndexRoute = VoteIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => VoteRoute,
+} as any)
+const ExaminerIndexRoute = ExaminerIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ExaminerRouteRoute,
+} as any)
 const ContestantIndexRoute = ContestantIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => ContestantRoute,
+} as any)
+const VoteDanhSachThiSinhRoute = VoteDanhSachThiSinhRouteImport.update({
+  id: '/danh-sach-thi-sinh',
+  path: '/danh-sach-thi-sinh',
+  getParentRoute: () => VoteRoute,
+} as any)
+const VoteBangXepHangRoute = VoteBangXepHangRouteImport.update({
+  id: '/bang-xep-hang',
+  path: '/bang-xep-hang',
+  getParentRoute: () => VoteRoute,
+} as any)
+const VoteAuthRoute = VoteAuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => VoteRoute,
 } as any)
 const ContestantRegisterRoute = ContestantRegisterRouteImport.update({
   id: '/register',
@@ -52,15 +95,29 @@ const ContestantDashboardRoute = ContestantDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => ContestantRoute,
 } as any)
+const ExaminerScoreContestantIdRoute =
+  ExaminerScoreContestantIdRouteImport.update({
+    id: '/score/$contestantId',
+    path: '/score/$contestantId',
+    getParentRoute: () => ExaminerRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/examiner': typeof ExaminerRouteRouteWithChildren
   '/contestant': typeof ContestantRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/vote': typeof VoteRouteWithChildren
   '/contestant/dashboard': typeof ContestantDashboardRoute
   '/contestant/register': typeof ContestantRegisterRoute
+  '/vote/auth': typeof VoteAuthRoute
+  '/vote/bang-xep-hang': typeof VoteBangXepHangRoute
+  '/vote/danh-sach-thi-sinh': typeof VoteDanhSachThiSinhRoute
   '/contestant/': typeof ContestantIndexRoute
+  '/examiner/': typeof ExaminerIndexRoute
+  '/vote/': typeof VoteIndexRoute
+  '/examiner/score/$contestantId': typeof ExaminerScoreContestantIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -68,28 +125,50 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/contestant/dashboard': typeof ContestantDashboardRoute
   '/contestant/register': typeof ContestantRegisterRoute
+  '/vote/auth': typeof VoteAuthRoute
+  '/vote/bang-xep-hang': typeof VoteBangXepHangRoute
+  '/vote/danh-sach-thi-sinh': typeof VoteDanhSachThiSinhRoute
   '/contestant': typeof ContestantIndexRoute
+  '/examiner': typeof ExaminerIndexRoute
+  '/vote': typeof VoteIndexRoute
+  '/examiner/score/$contestantId': typeof ExaminerScoreContestantIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/examiner': typeof ExaminerRouteRouteWithChildren
   '/contestant': typeof ContestantRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/vote': typeof VoteRouteWithChildren
   '/contestant/dashboard': typeof ContestantDashboardRoute
   '/contestant/register': typeof ContestantRegisterRoute
+  '/vote/auth': typeof VoteAuthRoute
+  '/vote/bang-xep-hang': typeof VoteBangXepHangRoute
+  '/vote/danh-sach-thi-sinh': typeof VoteDanhSachThiSinhRoute
   '/contestant/': typeof ContestantIndexRoute
+  '/examiner/': typeof ExaminerIndexRoute
+  '/vote/': typeof VoteIndexRoute
+  '/examiner/score/$contestantId': typeof ExaminerScoreContestantIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/examiner'
     | '/contestant'
     | '/login'
     | '/register'
+    | '/vote'
     | '/contestant/dashboard'
     | '/contestant/register'
+    | '/vote/auth'
+    | '/vote/bang-xep-hang'
+    | '/vote/danh-sach-thi-sinh'
     | '/contestant/'
+    | '/examiner/'
+    | '/vote/'
+    | '/examiner/score/$contestantId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -97,27 +176,50 @@ export interface FileRouteTypes {
     | '/register'
     | '/contestant/dashboard'
     | '/contestant/register'
+    | '/vote/auth'
+    | '/vote/bang-xep-hang'
+    | '/vote/danh-sach-thi-sinh'
     | '/contestant'
+    | '/examiner'
+    | '/vote'
+    | '/examiner/score/$contestantId'
   id:
     | '__root__'
     | '/'
+    | '/examiner'
     | '/contestant'
     | '/login'
     | '/register'
+    | '/vote'
     | '/contestant/dashboard'
     | '/contestant/register'
+    | '/vote/auth'
+    | '/vote/bang-xep-hang'
+    | '/vote/danh-sach-thi-sinh'
     | '/contestant/'
+    | '/examiner/'
+    | '/vote/'
+    | '/examiner/score/$contestantId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ExaminerRouteRoute: typeof ExaminerRouteRouteWithChildren
   ContestantRoute: typeof ContestantRouteWithChildren
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
+  VoteRoute: typeof VoteRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/vote': {
+      id: '/vote'
+      path: '/vote'
+      fullPath: '/vote'
+      preLoaderRoute: typeof VoteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/register': {
       id: '/register'
       path: '/register'
@@ -139,6 +241,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContestantRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/examiner': {
+      id: '/examiner'
+      path: '/examiner'
+      fullPath: '/examiner'
+      preLoaderRoute: typeof ExaminerRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -146,12 +255,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/vote/': {
+      id: '/vote/'
+      path: '/'
+      fullPath: '/vote/'
+      preLoaderRoute: typeof VoteIndexRouteImport
+      parentRoute: typeof VoteRoute
+    }
+    '/examiner/': {
+      id: '/examiner/'
+      path: '/'
+      fullPath: '/examiner/'
+      preLoaderRoute: typeof ExaminerIndexRouteImport
+      parentRoute: typeof ExaminerRouteRoute
+    }
     '/contestant/': {
       id: '/contestant/'
       path: '/'
       fullPath: '/contestant/'
       preLoaderRoute: typeof ContestantIndexRouteImport
       parentRoute: typeof ContestantRoute
+    }
+    '/vote/danh-sach-thi-sinh': {
+      id: '/vote/danh-sach-thi-sinh'
+      path: '/danh-sach-thi-sinh'
+      fullPath: '/vote/danh-sach-thi-sinh'
+      preLoaderRoute: typeof VoteDanhSachThiSinhRouteImport
+      parentRoute: typeof VoteRoute
+    }
+    '/vote/bang-xep-hang': {
+      id: '/vote/bang-xep-hang'
+      path: '/bang-xep-hang'
+      fullPath: '/vote/bang-xep-hang'
+      preLoaderRoute: typeof VoteBangXepHangRouteImport
+      parentRoute: typeof VoteRoute
+    }
+    '/vote/auth': {
+      id: '/vote/auth'
+      path: '/auth'
+      fullPath: '/vote/auth'
+      preLoaderRoute: typeof VoteAuthRouteImport
+      parentRoute: typeof VoteRoute
     }
     '/contestant/register': {
       id: '/contestant/register'
@@ -167,8 +311,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContestantDashboardRouteImport
       parentRoute: typeof ContestantRoute
     }
+    '/examiner/score/$contestantId': {
+      id: '/examiner/score/$contestantId'
+      path: '/score/$contestantId'
+      fullPath: '/examiner/score/$contestantId'
+      preLoaderRoute: typeof ExaminerScoreContestantIdRouteImport
+      parentRoute: typeof ExaminerRouteRoute
+    }
   }
 }
+
+interface ExaminerRouteRouteChildren {
+  ExaminerIndexRoute: typeof ExaminerIndexRoute
+  ExaminerScoreContestantIdRoute: typeof ExaminerScoreContestantIdRoute
+}
+
+const ExaminerRouteRouteChildren: ExaminerRouteRouteChildren = {
+  ExaminerIndexRoute: ExaminerIndexRoute,
+  ExaminerScoreContestantIdRoute: ExaminerScoreContestantIdRoute,
+}
+
+const ExaminerRouteRouteWithChildren = ExaminerRouteRoute._addFileChildren(
+  ExaminerRouteRouteChildren,
+)
 
 interface ContestantRouteChildren {
   ContestantDashboardRoute: typeof ContestantDashboardRoute
@@ -186,11 +351,29 @@ const ContestantRouteWithChildren = ContestantRoute._addFileChildren(
   ContestantRouteChildren,
 )
 
+interface VoteRouteChildren {
+  VoteAuthRoute: typeof VoteAuthRoute
+  VoteBangXepHangRoute: typeof VoteBangXepHangRoute
+  VoteDanhSachThiSinhRoute: typeof VoteDanhSachThiSinhRoute
+  VoteIndexRoute: typeof VoteIndexRoute
+}
+
+const VoteRouteChildren: VoteRouteChildren = {
+  VoteAuthRoute: VoteAuthRoute,
+  VoteBangXepHangRoute: VoteBangXepHangRoute,
+  VoteDanhSachThiSinhRoute: VoteDanhSachThiSinhRoute,
+  VoteIndexRoute: VoteIndexRoute,
+}
+
+const VoteRouteWithChildren = VoteRoute._addFileChildren(VoteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ExaminerRouteRoute: ExaminerRouteRouteWithChildren,
   ContestantRoute: ContestantRouteWithChildren,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
+  VoteRoute: VoteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

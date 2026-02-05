@@ -1,6 +1,8 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { apiRequest } from "../lib/api";
+import { SCORING_CRITERIA } from "../lib/constants";
+import { useAuthStore } from "../store/useAuthStore";
 
 // --- Icons ---
 const HomeIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504 1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>);
@@ -9,6 +11,8 @@ const ChartBarIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" fill="none" 
 const UserIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>);
 const LogoutIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" /></svg>);
 const BellIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>);
+const Bars3Icon = () => (<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>);
+const XMarkIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>);
 
 const MY_PROFILE_QUERY = `
 query MyProfile {
@@ -87,6 +91,7 @@ mutation UpdateContestantProfile($input: UpdateContestantInput!) {
 
 export const ContestantDashboard = () => {
     const navigate = useNavigate();
+    const { token, logout } = useAuthStore(); // Use store
     const [profile, setProfile] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState("overview");
@@ -95,15 +100,15 @@ export const ContestantDashboard = () => {
     // Feedback State
     const [feedbacks, setFeedbacks] = useState<any[]>([]);
     const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [feedbackTitle, setFeedbackTitle] = useState("");
     const [feedbackContent, setFeedbackContent] = useState("");
     const [feedbackType, setFeedbackType] = useState("support");
     const [loadingFeedbacks, setLoadingFeedbacks] = useState(false);
 
     useEffect(() => {
-        const token = localStorage.getItem("token");
         if (!token) {
-            navigate({ to: "/login" });
+            navigate({ to: "/login" as "/login" });
             return;
         }
 
@@ -112,14 +117,14 @@ export const ContestantDashboard = () => {
                 if (data && data.myProfile) {
                     setProfile(data.myProfile);
                 } else {
-                    navigate({ to: "/login" });
+                    navigate({ to: "/login" as "/login" });
                 }
             })
-            .catch(() => navigate({ to: "/login" }))
+            .catch(() => navigate({ to: "/login" as "/login" }))
             .finally(() => setLoading(false));
     }, [navigate]);
 
-    // Fetch Feedbacks when tab changes
+
     useEffect(() => {
         if (activeTab === 'notifications') {
             fetchFeedbacks();
@@ -127,7 +132,7 @@ export const ContestantDashboard = () => {
     }, [activeTab]);
 
     const fetchFeedbacks = () => {
-        const token = localStorage.getItem("token");
+        // const token = localStorage.getItem("token"); // Removed
         setLoadingFeedbacks(true);
         apiRequest(MY_FEEDBACKS_QUERY, {}, token)
             .then((data: any) => {
@@ -141,7 +146,7 @@ export const ContestantDashboard = () => {
 
     const handleSendFeedback = async (e: React.FormEvent) => {
         e.preventDefault();
-        const token = localStorage.getItem("token");
+        // const token = localStorage.getItem("token"); // Removed
 
         if (!feedbackTitle || !feedbackContent) {
             alert("Vui lòng điền đầy đủ tiêu đề và nội dung.");
@@ -171,13 +176,13 @@ export const ContestantDashboard = () => {
         }
     };
 
-    // Score State
+
     const [scores, setScores] = useState<any[]>([]);
     const [loadingScores, setLoadingScores] = useState(false);
 
     useEffect(() => {
         if (activeTab === 'stats') {
-            const token = localStorage.getItem("token");
+            // const token = localStorage.getItem("token"); // Removed
             setLoadingScores(true);
             apiRequest(MY_SCORES_QUERY, {}, token)
                 .then((data: any) => {
@@ -194,7 +199,7 @@ export const ContestantDashboard = () => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Validation
+
         const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
         if (!validTypes.includes(file.type)) {
             alert("Chỉ chấp nhận định dạng ảnh JPG, PNG, hoặc WebP.");
@@ -210,7 +215,7 @@ export const ContestantDashboard = () => {
         formData.append("file", file);
 
         try {
-            const token = localStorage.getItem("token");
+            // const token = localStorage.getItem("token"); // Removed
             let apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
             if (apiUrl.endsWith("/query")) apiUrl = apiUrl.slice(0, -6);
 
@@ -224,7 +229,7 @@ export const ContestantDashboard = () => {
 
             const data = await response.json() as { url: string };
 
-            // Update local profile state immediately for preview
+
             setProfile((prev: any) => {
                 if (!prev) return prev;
                 const newPortfolio = { ...(prev.portfolio || {}), [fieldName]: data.url };
@@ -240,8 +245,8 @@ export const ContestantDashboard = () => {
     };
 
     const handleLogout = () => {
-        localStorage.removeItem("token");
-        navigate({ to: "/login" });
+        logout();
+        navigate({ to: "/login" as "/login" });
     }
 
     if (loading) return (
@@ -284,10 +289,11 @@ export const ContestantDashboard = () => {
             <div className="fixed inset-0 z-0 bg-white/20 backdrop-blur-[1px]" style={{ backgroundImage: "url('/giaodien2.jpeg')", backgroundSize: 'cover' }}></div>
 
             <div className="relative z-10 flex flex-col min-h-screen">
-                {/* Header */}
+
                 <header className="sticky top-0 z-50 bg-white/10 backdrop-blur-md border-b border-pink-200/20 shadow-sm transition-all duration-300">
                     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex justify-between items-center h-20">
+                            {/* Logo */}
                             <div className="flex items-center space-x-3 group">
                                 <img src="/logoM.png" alt="Miss Beauty Logo" className="h-12 w-auto object-contain cursor-pointer drop-shadow-md hover:scale-105 transition-transform rounded-xl" />
                                 <div className="hidden md:block">
@@ -296,6 +302,7 @@ export const ContestantDashboard = () => {
                                 </div>
                             </div>
 
+                            {/* Desktop Navigation */}
                             <nav className="hidden md:flex space-x-8 h-full items-center">
                                 <NavItem tab="overview" label="Tổng quan" icon={HomeIcon} />
                                 <NavItem tab="profile" label="Hồ sơ" icon={UserIcon} />
@@ -304,23 +311,56 @@ export const ContestantDashboard = () => {
                                 <NavItem tab="stats" label="Kết quả" icon={ChartBarIcon} />
                             </nav>
 
+                            {/* Actions & Mobile Toggle */}
                             <div className="flex items-center space-x-3">
-                                <button onClick={handleLogout} className="px-6 py-3 rounded-full text-pink-600 hover:text-pink-700 hover:bg-pink-100/50 transition-all transform hover:scale-110 active:scale-95 shadow-sm border border-pink-200/50" title="Đăng xuất">
+                                <button onClick={handleLogout} className="hidden md:block px-6 py-3 rounded-full text-pink-600 hover:text-pink-700 hover:bg-pink-100/50 transition-all transform hover:scale-110 active:scale-95 shadow-sm border border-pink-200/50" title="Đăng xuất">
                                     <div className="scale-125">
                                         <LogoutIcon />
                                     </div>
                                 </button>
+                                {/* Mobile Menu Button */}
+                                <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="md:hidden p-2 text-pink-600 hover:bg-pink-50 rounded-lg transition-colors">
+                                    {isMobileMenuOpen ? <XMarkIcon /> : <Bars3Icon />}
+                                </button>
                             </div>
                         </div>
                     </div>
+
+                    {/* Mobile Navigation Menu */}
+                    {isMobileMenuOpen && (
+                        <div className="md:hidden absolute top-20 left-0 w-full bg-white/95 backdrop-blur-xl border-b border-pink-100 shadow-xl animate-fade-in-down">
+                            <div className="px-4 py-6 space-y-4">
+                                <button onClick={() => { setActiveTab('overview'); setIsMobileMenuOpen(false); }} className={`flex items-center space-x-4 w-full p-4 rounded-xl transition-all ${activeTab === 'overview' ? 'bg-pink-50 text-pink-700' : 'text-slate-600 hover:bg-pink-50/50'}`}>
+                                    <HomeIcon /> <span className="font-bold uppercase text-sm">Tổng quan</span>
+                                </button>
+                                <button onClick={() => { setActiveTab('profile'); setIsMobileMenuOpen(false); }} className={`flex items-center space-x-4 w-full p-4 rounded-xl transition-all ${activeTab === 'profile' ? 'bg-pink-50 text-pink-700' : 'text-slate-600 hover:bg-pink-50/50'}`}>
+                                    <UserIcon /> <span className="font-bold uppercase text-sm">Hồ sơ</span>
+                                </button>
+                                <button onClick={() => { setActiveTab('notifications'); setIsMobileMenuOpen(false); }} className={`flex items-center space-x-4 w-full p-4 rounded-xl transition-all ${activeTab === 'notifications' ? 'bg-pink-50 text-pink-700' : 'text-slate-600 hover:bg-pink-50/50'}`}>
+                                    <ChatIcon /> <span className="font-bold uppercase text-sm">Hỗ trợ</span>
+                                </button>
+                                <button onClick={() => { setActiveTab('gallery'); setIsMobileMenuOpen(false); }} className={`flex items-center space-x-4 w-full p-4 rounded-xl transition-all ${activeTab === 'gallery' ? 'bg-pink-50 text-pink-700' : 'text-slate-600 hover:bg-pink-50/50'}`}>
+                                    <PhotoIcon /> <span className="font-bold uppercase text-sm">Thư viện</span>
+                                </button>
+                                <button onClick={() => { setActiveTab('stats'); setIsMobileMenuOpen(false); }} className={`flex items-center space-x-4 w-full p-4 rounded-xl transition-all ${activeTab === 'stats' ? 'bg-pink-50 text-pink-700' : 'text-slate-600 hover:bg-pink-50/50'}`}>
+                                    <ChartBarIcon /> <span className="font-bold uppercase text-sm">Kết quả</span>
+                                </button>
+                                <div className="border-t border-pink-100 pt-4 mt-4">
+                                    <button onClick={handleLogout} className="flex items-center space-x-4 w-full p-4 rounded-xl text-red-600 hover:bg-red-50 transition-all">
+                                        <LogoutIcon /> <span className="font-bold uppercase text-sm">Đăng xuất</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </header>
 
                 <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mb-20 md:mb-8 w-full">
                     {activeTab === 'overview' && (
                         <div className="animate-fade-in-up">
-                            <div className="relative rounded-3xl overflow-hidden bg-white/60 backdrop-blur-md border border-pink-100 shadow-2xl mb-12 p-8 md:p-12 text-slate-800 shadow-pink-100/50">
-                                <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
-                                    <div className="relative h-32 w-32 bg-white/50 backdrop-blur-md rounded-full flex items-center justify-center text-5xl font-serif text-pink-400 border-2 border-pink-200 shadow-inner overflow-hidden">
+                            <div className="relative rounded-3xl overflow-hidden bg-white/60 backdrop-blur-md border border-pink-100 shadow-2xl mb-8 md:mb-12 p-6 md:p-12 text-slate-800 shadow-pink-100/50">
+                                <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 md:gap-8">
+                                    <div className="relative h-24 w-24 md:h-32 md:w-32 bg-white/50 backdrop-blur-md rounded-full flex items-center justify-center text-4xl md:text-5xl font-serif text-pink-400 border-2 border-pink-200 shadow-inner overflow-hidden flex-shrink-0">
                                         {profile?.portfolio?.avatarUrl ? (
                                             <img src={getFullImageUrl(profile.portfolio.avatarUrl)} alt="Avatar" className="w-full h-full object-cover" />
                                         ) : (
@@ -329,9 +369,9 @@ export const ContestantDashboard = () => {
                                     </div>
 
                                     <div className="text-center md:text-left flex-1">
-                                        <h2 className="text-4xl md:text-5xl font-serif font-bold mb-2 text-pink-900">{profile?.personalInfo?.fullName}</h2>
-                                        <p className="text-pink-700 text-xl font-bold mb-6">SBD: {profile?.sbd || "---"}</p>
-                                        <div className="flex gap-2">
+                                        <h2 className="text-2xl md:text-5xl font-serif font-bold mb-2 text-pink-900 break-words line-clamp-2">{profile?.personalInfo?.fullName}</h2>
+                                        <p className="text-pink-700 text-lg md:text-xl font-bold mb-4 md:mb-6">SBD: {profile?.sbd || "---"}</p>
+                                        <div className="flex justify-center md:justify-start gap-2 flex-wrap">
                                             {(() => {
                                                 const status = profile?.status?.toLowerCase() || "pending";
                                                 const config: any = {
@@ -342,7 +382,7 @@ export const ContestantDashboard = () => {
                                                 };
                                                 const current = config[status] || config["pending"];
                                                 return (
-                                                    <span className={`px-4 py-2 ${current.bg} ${current.text} font-bold rounded-full uppercase text-xs shadow-lg`}>
+                                                    <span className={`px-4 py-2 ${current.bg} ${current.text} font-bold rounded-full uppercase text-[10px] md:text-xs shadow-lg whitespace-nowrap`}>
                                                         {current.label}
                                                     </span>
                                                 );
@@ -352,14 +392,14 @@ export const ContestantDashboard = () => {
                                 </div>
                             </div>
 
-                            {/* Announcements Section */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="bg-white/60 backdrop-blur-md rounded-3xl p-8 border border-pink-100 shadow-xl text-slate-800 shadow-pink-100/50">
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                                <div className="bg-white/60 backdrop-blur-md rounded-3xl p-6 md:p-8 border border-pink-100 shadow-xl text-slate-800 shadow-pink-100/50">
                                     <div className="flex items-center gap-3 mb-6">
                                         <div className="p-2 bg-pink-100 rounded-lg text-pink-600">
                                             <BellIcon />
                                         </div>
-                                        <h3 className="text-xl font-serif font-bold text-pink-900">Thông Báo Từ BTC</h3>
+                                        <h3 className="text-lg md:text-xl font-serif font-bold text-pink-900">Thông Báo Từ BTC</h3>
                                     </div>
                                     <div className="space-y-4">
                                         {[
@@ -368,42 +408,42 @@ export const ContestantDashboard = () => {
                                         ].map((item) => (
                                             <div key={item.id} className="bg-white/40 rounded-xl p-4 border border-pink-100 hover:bg-white/60 transition-colors cursor-pointer group">
                                                 <div className="flex justify-between items-start mb-2">
-                                                    <h4 className="font-bold text-pink-700 group-hover:text-pink-600">{item.title}</h4>
-                                                    <span className="text-[10px] bg-pink-100 px-2 py-1 rounded text-pink-600">{item.date}</span>
+                                                    <h4 className="font-bold text-pink-700 group-hover:text-pink-600 text-sm md:text-base line-clamp-1 mr-2">{item.title}</h4>
+                                                    <span className="text-[10px] bg-pink-100 px-2 py-1 rounded text-pink-600 whitespace-nowrap">{item.date}</span>
                                                 </div>
-                                                <p className="text-sm text-gray-900 font-medium line-clamp-2">{item.content}</p>
+                                                <p className="text-xs md:text-sm text-gray-900 font-medium line-clamp-2">{item.content}</p>
                                             </div>
                                         ))}
                                     </div>
                                 </div>
 
-                                <div className="bg-white/60 backdrop-blur-md rounded-3xl p-8 border border-pink-100 shadow-xl text-slate-800 shadow-pink-100/50">
+                                <div className="bg-white/60 backdrop-blur-md rounded-3xl p-6 md:p-8 border border-pink-100 shadow-xl text-slate-800 shadow-pink-100/50">
                                     <div className="flex items-center gap-3 mb-6">
                                         <div className="p-2 bg-pink-500 rounded-lg text-white">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0h18M5.25 12h13.5h-13.5zm0 5.25h13.5h-13.5z" />
                                             </svg>
                                         </div>
-                                        <h3 className="text-xl font-serif font-bold text-pink-900">Lịch Trình</h3>
+                                        <h3 className="text-lg md:text-xl font-serif font-bold text-pink-900">Lịch Trình</h3>
                                     </div>
                                     <div className="space-y-4">
                                         <div className="flex gap-4 items-center">
-                                            <div className="flex-shrink-0 w-16 text-center bg-white/50 rounded-lg p-2 border border-pink-100 shadow-sm">
-                                                <span className="block text-xl font-bold text-pink-600">20</span>
-                                                <span className="block text-xs uppercase text-gray-900 font-bold">Tháng 1</span>
+                                            <div className="flex-shrink-0 w-14 md:w-16 text-center bg-white/50 rounded-lg p-2 border border-pink-100 shadow-sm">
+                                                <span className="block text-lg md:text-xl font-bold text-pink-600">20</span>
+                                                <span className="block text-[10px] md:text-xs uppercase text-gray-900 font-bold">Tháng 1</span>
                                             </div>
                                             <div>
-                                                <h4 className="font-bold text-slate-800">Vòng Sơ Khảo TP.HCM</h4>
+                                                <h4 className="font-bold text-slate-800 text-sm md:text-base">Vòng Sơ Khảo TP.HCM</h4>
                                                 <p className="text-xs text-gray-800 font-medium">08:00 - Trung tâm Hội nghị Gem Center</p>
                                             </div>
                                         </div>
                                         <div className="flex gap-4 items-center opacity-70">
-                                            <div className="flex-shrink-0 w-16 text-center bg-white/50 rounded-lg p-2 border border-pink-100 shadow-sm">
-                                                <span className="block text-xl font-bold text-slate-400">25</span>
-                                                <span className="block text-xs uppercase text-gray-900 font-bold">Tháng 1</span>
+                                            <div className="flex-shrink-0 w-14 md:w-16 text-center bg-white/50 rounded-lg p-2 border border-pink-100 shadow-sm">
+                                                <span className="block text-lg md:text-xl font-bold text-slate-400">25</span>
+                                                <span className="block text-[10px] md:text-xs uppercase text-gray-900 font-bold">Tháng 1</span>
                                             </div>
                                             <div>
-                                                <h4 className="font-bold text-slate-700">Vòng Sơ Khảo Hà Nội</h4>
+                                                <h4 className="font-bold text-slate-700 text-sm md:text-base">Vòng Sơ Khảo Hà Nội</h4>
                                                 <p className="text-xs text-gray-800 font-medium">08:00 - Khách sạn Melia</p>
                                             </div>
                                         </div>
@@ -416,13 +456,13 @@ export const ContestantDashboard = () => {
                     {activeTab === 'profile' && profile && (() => {
                         const canEdit = (profile.status || 'pending').toLowerCase() === 'pending';
                         return (
-                            <div className="animate-fade-in-up bg-white/60 backdrop-blur-md rounded-3xl p-8 border border-pink-100 text-slate-800 shadow-2xl shadow-pink-100/50">
-                                <div className="flex justify-between items-center mb-6">
-                                    <h3 className="text-2xl font-serif font-bold text-pink-900">Thông Tin Cá nhân</h3>
+                            <div className="animate-fade-in-up bg-white/60 backdrop-blur-md rounded-3xl p-6 md:p-8 border border-pink-100 text-slate-800 shadow-2xl shadow-pink-100/50">
+                                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                                    <h3 className="text-xl md:text-2xl font-serif font-bold text-pink-900">Thông Tin Cá nhân</h3>
                                     {canEdit ? (
-                                        <span className="text-sm bg-pink-100 text-pink-700 px-3 py-1 rounded-full font-bold">Cho phép chỉnh sửa</span>
+                                        <span className="text-xs md:text-sm bg-pink-100 text-pink-700 px-3 py-1 rounded-full font-bold whitespace-nowrap">Cho phép chỉnh sửa</span>
                                     ) : (
-                                        <span className="text-sm bg-red-100 text-red-600 px-3 py-1 rounded-full font-bold">Đã khóa (Chỉ xem)</span>
+                                        <span className="text-xs md:text-sm bg-red-100 text-red-600 px-3 py-1 rounded-full font-bold whitespace-nowrap">Đã khóa (Chỉ xem)</span>
                                     )}
                                 </div>
 
@@ -432,11 +472,11 @@ export const ContestantDashboard = () => {
                                     const input: any = {};
                                     formData.forEach((value, key) => input[key] = value);
 
-                                    // Convert types
+
                                     input.height = parseFloat(input.height);
                                     input.weight = parseFloat(input.weight);
 
-                                    // Handle Social Links (Split inputs)
+
                                     const socialLinks = [
                                         input.facebook,
                                         input.instagram,
@@ -449,7 +489,7 @@ export const ContestantDashboard = () => {
 
                                     if (input.galleryUrls) input.galleryUrls = input.galleryUrls.split('\n').map((s: string) => s.trim()).filter((s: string) => s !== "");
 
-                                    const token = localStorage.getItem("token");
+                                    // const token = localStorage.getItem("token"); // Removed
                                     apiRequest(UPDATE_PROFILE_MUTATION, { input }, token)
                                         .then((data: any) => {
                                             alert("Cập nhật thành công!");
@@ -460,9 +500,9 @@ export const ContestantDashboard = () => {
                                         .catch((err: any) => alert("Lỗi: " + err.message));
                                 }}>
                                     <div className="space-y-8">
-                                        {/* 1. Avatar Section (Top) */}
+
                                         <div className="flex flex-col items-center justify-center p-6 bg-white/5 rounded-2xl border border-white/10">
-                                            <div className="relative group w-32 h-32">
+                                            <div className="relative group w-24 h-24 md:w-32 md:h-32">
                                                 {(() => {
                                                     return (
                                                         <div className="w-full h-full rounded-full overflow-hidden border-4 border-white shadow-xl bg-gray-100">
@@ -488,64 +528,64 @@ export const ContestantDashboard = () => {
                                                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                                             onChange={(e) => handleFileUpload(e, 'avatarUrl')}
                                                         />
-                                                        {uploading && <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full"><div className="animate-spin h-8 w-8 border-2 border-white rounded-full border-t-transparent"></div></div>}
+                                                        {uploading && <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full"><div className="animate-spin h-6 w-6 md:h-8 md:w-8 border-2 border-white rounded-full border-t-transparent"></div></div>}
                                                     </>
                                                 )}
                                             </div>
                                             <input type="hidden" name="avatarUrl" value={profile.portfolio?.avatarUrl || ''} />
-                                            <p className="text-sm text-pink-500 mt-3 font-medium italic">Chạm vào hình để thay đổi ảnh đại diện</p>
+                                            <p className="text-xs md:text-sm text-pink-500 mt-3 font-medium italic text-center">Chạm vào hình để thay đổi ảnh đại diện</p>
                                         </div>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                            {/* 2. Physical Info (Priority) */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+
                                             <div className="space-y-4">
-                                                <h4 className="font-bold text-pink-600 uppercase text-sm border-b border-pink-100 pb-2">Chỉ số hình thể</h4>
+                                                <h4 className="font-bold text-pink-600 uppercase text-xs md:text-sm border-b border-pink-100 pb-2">Chỉ số hình thể</h4>
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div>
                                                         <label className="block text-xs uppercase text-slate-500 font-bold mb-1">Chiều cao (cm)</label>
-                                                        <input name="height" type="number" step="0.1" defaultValue={profile.physicalInfo?.height} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800" />
+                                                        <input name="height" type="number" step="0.1" defaultValue={profile.physicalInfo?.height} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800 text-sm" />
                                                     </div>
                                                     <div>
                                                         <label className="block text-xs uppercase text-slate-500 font-bold mb-1">Cân nặng (kg)</label>
-                                                        <input name="weight" type="number" step="0.1" defaultValue={profile.physicalInfo?.weight} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800" />
+                                                        <input name="weight" type="number" step="0.1" defaultValue={profile.physicalInfo?.weight} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800 text-sm" />
                                                     </div>
                                                 </div>
                                                 <div>
                                                     <label className="block text-xs uppercase text-slate-500 font-bold mb-1">Số đo 3 vòng (cm)</label>
-                                                    <input name="measurements" defaultValue={profile.physicalInfo?.measurements} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800" />
+                                                    <input name="measurements" defaultValue={profile.physicalInfo?.measurements} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800 text-sm" />
                                                 </div>
                                             </div>
 
-                                            {/* 3. Personal Info */}
+
                                             <div className="space-y-4">
-                                                <h4 className="font-bold text-pink-600 uppercase text-sm border-b border-pink-100 pb-2">Thông tin cá nhân</h4>
+                                                <h4 className="font-bold text-pink-600 uppercase text-xs md:text-sm border-b border-pink-100 pb-2">Thông tin cá nhân</h4>
                                                 <div>
                                                     <label className="block text-xs uppercase text-slate-500 font-bold mb-1">Họ và tên</label>
-                                                    <input name="fullName" defaultValue={profile.personalInfo?.fullName} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800" />
+                                                    <input name="fullName" defaultValue={profile.personalInfo?.fullName} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800 text-sm" />
                                                 </div>
-                                                <div className="grid grid-cols-2 gap-4">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                     <div>
                                                         <label className="block text-xs uppercase text-slate-500 font-bold mb-1">Số điện thoại</label>
-                                                        <input name="phone" defaultValue={profile.personalInfo?.phone} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800" />
+                                                        <input name="phone" defaultValue={profile.personalInfo?.phone} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800 text-sm" />
                                                     </div>
                                                     <div>
                                                         <label className="block text-xs uppercase text-slate-500 font-bold mb-1">Email</label>
-                                                        <input name="email" defaultValue={profile.personalInfo?.email} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800" />
+                                                        <input name="email" defaultValue={profile.personalInfo?.email} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800 text-sm" />
                                                     </div>
                                                 </div>
                                                 <div>
                                                     <label className="block text-xs uppercase text-slate-500 font-bold mb-1">Địa chỉ</label>
-                                                    <input name="address" defaultValue={profile.personalInfo?.address} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800" />
+                                                    <input name="address" defaultValue={profile.personalInfo?.address} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800 text-sm" />
                                                 </div>
                                                 <div>
                                                     <label className="block text-xs uppercase text-slate-500 font-bold mb-1">Nghề nghiệp</label>
-                                                    <input name="job" defaultValue={profile.personalInfo?.job} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800" />
+                                                    <input name="job" defaultValue={profile.personalInfo?.job} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800 text-sm" />
                                                 </div>
                                             </div>
 
-                                            {/* 4. Social Links (Split) */}
+
                                             <div className="space-y-4">
-                                                <h4 className="font-bold text-pink-600 uppercase text-sm border-b border-pink-100 pb-2">Mạng xã hội</h4>
+                                                <h4 className="font-bold text-pink-600 uppercase text-xs md:text-sm border-b border-pink-100 pb-2">Mạng xã hội</h4>
                                                 {(() => {
                                                     const links = profile.portfolio?.socialLinks || [];
                                                     const getLink = (keyword: string) => links.find((l: string) => l.toLowerCase().includes(keyword)) || "";
@@ -553,32 +593,32 @@ export const ContestantDashboard = () => {
                                                         <>
                                                             <div>
                                                                 <label className="block text-xs uppercase text-slate-500 font-bold mb-1">Facebook</label>
-                                                                <input name="facebook" defaultValue={getLink('facebook')} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800" placeholder="https://facebook.com/..." />
+                                                                <input name="facebook" defaultValue={getLink('facebook')} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800 text-sm" placeholder="https://facebook.com/..." />
                                                             </div>
                                                             <div>
                                                                 <label className="block text-xs uppercase text-slate-500 font-bold mb-1">Instagram</label>
-                                                                <input name="instagram" defaultValue={getLink('instagram')} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800" placeholder="https://instagram.com/..." />
+                                                                <input name="instagram" defaultValue={getLink('instagram')} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800 text-sm" placeholder="https://instagram.com/..." />
                                                             </div>
                                                             <div>
                                                                 <label className="block text-xs uppercase text-slate-500 font-bold mb-1">TikTok</label>
-                                                                <input name="tiktok" defaultValue={getLink('tiktok')} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800" placeholder="https://tiktok.com/..." />
+                                                                <input name="tiktok" defaultValue={getLink('tiktok')} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800 text-sm" placeholder="https://tiktok.com/..." />
                                                             </div>
                                                         </>
                                                     );
                                                 })()}
                                             </div>
 
-                                            {/* 5. Gallery & Intro */}
+
                                             <div className="space-y-4">
-                                                <h4 className="font-bold text-pink-600 uppercase text-sm border-b border-pink-100 pb-2">Khác</h4>
+                                                <h4 className="font-bold text-pink-600 uppercase text-xs md:text-sm border-b border-pink-100 pb-2">Khác</h4>
                                                 <div>
                                                     <label className="block text-xs uppercase text-slate-500 font-bold mb-1">Thư viện ảnh (URLs)</label>
-                                                    <textarea name="galleryUrls" rows={3} defaultValue={profile.portfolio?.galleryUrls?.join('\n')} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800" placeholder="Mỗi dòng một link ảnh..." />
+                                                    <textarea name="galleryUrls" rows={3} defaultValue={profile.portfolio?.galleryUrls?.join('\n')} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800 text-sm" placeholder="Mỗi dòng một link ảnh..." />
                                                     <p className="text-[10px] text-blue-300 mt-1">Nhập mỗi link trên một dòng</p>
                                                 </div>
                                                 <div>
                                                     <label className="block text-xs uppercase text-slate-500 font-bold mb-1">Giới thiệu bản thân</label>
-                                                    <textarea name="introduction" rows={4} defaultValue={profile.portfolio?.introduction} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800" />
+                                                    <textarea name="introduction" rows={4} defaultValue={profile.portfolio?.introduction} disabled={!canEdit} className="w-full bg-white/60 border border-pink-100 rounded-lg px-4 py-2 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-200 disabled:opacity-50 text-slate-800 text-sm" />
                                                 </div>
                                             </div>
                                         </div>
@@ -586,7 +626,7 @@ export const ContestantDashboard = () => {
 
                                     {canEdit && (
                                         <div className="mt-8 flex justify-end">
-                                            <button type="submit" className="bg-yellow-400 text-blue-900 font-bold px-8 py-3 rounded-xl hover:bg-yellow-300 transition-all shadow-lg hover:shadow-yellow-400/20">
+                                            <button type="submit" className="w-full md:w-auto bg-yellow-400 text-blue-900 font-bold px-8 py-3 rounded-xl hover:bg-yellow-300 transition-all shadow-lg hover:shadow-yellow-400/20">
                                                 Lưu Thay Đổi
                                             </button>
                                         </div>
@@ -691,12 +731,16 @@ export const ContestantDashboard = () => {
                                                 <div>
                                                     <h5 className="font-bold text-sm text-slate-400 uppercase mb-4 border-b border-pink-100 pb-2">Chi tiết điểm thành phần</h5>
                                                     <div className="space-y-3">
-                                                        {Object.entries(score.criteriaScores || {}).map(([key, value]: [string, any]) => (
-                                                            <div key={key} className="flex justify-between items-center bg-white/40 px-4 py-2 rounded-lg border border-pink-50">
-                                                                <span className="text-sm font-medium text-slate-700 capitalize">{key.replace(/_/g, ' ')}</span>
-                                                                <span className="font-bold text-rose-500">{Number(value).toFixed(1)}</span>
-                                                            </div>
-                                                        ))}
+                                                        {Object.entries(score.criteriaScores || {}).map(([key, value]: [string, any]) => {
+                                                            const criteria = SCORING_CRITERIA.find((c: any) => c.key === key);
+                                                            const label = criteria ? criteria.label : key.replace(/_/g, ' ');
+                                                            return (
+                                                                <div key={key} className="flex justify-between items-center bg-white/40 px-4 py-2 rounded-lg border border-pink-50">
+                                                                    <span className="text-sm font-medium text-slate-700 capitalize">{label}</span>
+                                                                    <span className="font-bold text-rose-500">{Number(value).toFixed(1)}</span>
+                                                                </div>
+                                                            );
+                                                        })}
                                                     </div>
                                                 </div>
 

@@ -3,12 +3,13 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { apiRequest } from "../lib/api";
+import { useAuthStore } from "../store/useAuthStore";
 
 const REGISTER_MUTATION = `
 mutation Register($email: String!, $password: String!) {
-  register(email: $email, password: $password) {
-    token
-  }
+    register(email: $email, password: $password) {
+        token
+    }
 }
 `;
 
@@ -19,6 +20,7 @@ interface RegisterFormData {
 }
 
 export const Register = () => {
+    const { login } = useAuthStore();
     const { register, handleSubmit } = useForm<RegisterFormData>();
     const [error, setError] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -35,11 +37,12 @@ export const Register = () => {
         try {
             const result = await apiRequest(REGISTER_MUTATION, { email: data.email, password: data.password });
             const token = result.register.token;
-            localStorage.setItem("token", token);
 
-            // Redirect to dashboard
-            navigate({ to: "/contestant" });
-            window.location.href = "/contestant";
+            // Update Global State
+            login(token);
+
+            navigate({ to: "/contestant" as "/contestant" });
+            // window.location.href = "/contestant"; // Not needed with Router + Store
         } catch (err: any) {
             setError(err.message || "Failed to register");
         }
@@ -48,11 +51,11 @@ export const Register = () => {
     return (
         <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-cover bg-center" style={{ backgroundImage: "url('/login.jpeg')" }}>
             <div className="max-w-4xl w-full bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden flex shadow-slate-200/50">
-                {/* Left Side: Image */}
+
                 <div className="hidden md:block w-1/2 bg-cover bg-center" style={{ backgroundImage: "url('/1.jpeg')" }}>
                 </div>
 
-                {/* Right Side: Form */}
+
                 <div className="w-full md:w-1/2 p-8 md:p-12 lg:p-16 flex flex-col justify-center relative">
                     <div className="sm:mx-auto sm:w-full sm:max-w-md">
                         <h2 className="mt-2 text-center text-3xl font-extrabold tracking-tight text-gray-900">

@@ -2,6 +2,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { apiRequest } from "../lib/api";
+import { useAuthStore } from "../store/useAuthStore";
 
 const UserIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>);
 
@@ -55,6 +56,7 @@ export const ContestantRegistration = () => {
     const [uploading, setUploading] = useState(false);
     const [avatarUrl, setAvatarUrl] = useState("");
 
+    const { token } = useAuthStore(); // Add hook usage
     // Monitor avatar field for preview
     const watchedAvatar = watch("avatarUrl");
     useEffect(() => {
@@ -62,9 +64,8 @@ export const ContestantRegistration = () => {
     }, [watchedAvatar]);
 
     useEffect(() => {
-        const token = localStorage.getItem("token");
         if (!token) {
-            navigate({ to: "/login" });
+            navigate({ to: "/login" as "/login" });
             return;
         }
 
@@ -73,7 +74,7 @@ export const ContestantRegistration = () => {
             .then((data: any) => {
                 if (data && data.myProfile) {
                     // Already registered -> Go to Dashboard
-                    navigate({ to: "/contestant/dashboard" });
+                    navigate({ to: "/contestant/dashboard" as "/contestant/dashboard" });
                 } else {
                     // Pre-fill email/phone if available from other sources? 
                     // For now just let them fill.
@@ -102,7 +103,7 @@ export const ContestantRegistration = () => {
         formData.append("file", file);
 
         try {
-            const token = localStorage.getItem("token");
+            // const token = localStorage.getItem("token"); // Use hook
             let apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
             if (apiUrl.endsWith("/query")) apiUrl = apiUrl.slice(0, -6);
 
@@ -115,7 +116,8 @@ export const ContestantRegistration = () => {
             if (!response.ok) throw new Error("Upload failed");
 
             const data = await response.json() as { url: string };
-            setValue(fieldName, data.url);
+            const fullUrl = data.url.startsWith("http") ? data.url : `${apiUrl}${data.url}`;
+            setValue(fieldName, fullUrl);
         } catch (error: any) {
             console.error("Upload error:", error);
             alert("Lỗi tải ảnh lên.");
@@ -126,7 +128,7 @@ export const ContestantRegistration = () => {
 
     const onSubmit = async (data: any) => {
         setIsSaving(true);
-        const token = localStorage.getItem("token");
+        // const token = localStorage.getItem("token"); // Use hook
 
         const input = {
             fullName: data.fullName,
@@ -136,6 +138,8 @@ export const ContestantRegistration = () => {
             address: data.address,
             job: data.job,
             nationality: data.nationality,
+            identityCard: data.identityCard,
+            gender: data.gender,
             height: isNaN(parseFloat(data.height)) ? 0 : parseFloat(data.height),
             weight: isNaN(parseFloat(data.weight)) ? 0 : parseFloat(data.weight),
             measurements: data.measurements,
@@ -150,7 +154,7 @@ export const ContestantRegistration = () => {
         try {
             await apiRequest(CREATE_PROFILE_MUTATION, { input }, token);
             alert("Đăng ký hồ sơ thành công!");
-            navigate({ to: "/contestant/dashboard" });
+            navigate({ to: "/contestant/dashboard" as "/contestant/dashboard" });
             window.location.reload(); // Ensure dashboard loads fresh data
         } catch (error: any) {
             console.error("Registration Error:", error);
@@ -162,10 +166,10 @@ export const ContestantRegistration = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white py-12 px-4 sm:px-6 lg:px-8 font-sans text-slate-800">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white py-8 md:py-12 px-4 sm:px-6 lg:px-8 font-sans text-slate-800">
             <div className="max-w-4xl mx-auto">
-                <div className="text-center mb-10">
-                    <h2 className="text-3xl font-serif font-bold text-blue-900 mb-2">Đăng Ký Dự Thi</h2>
+                <div className="text-center mb-8 md:mb-10">
+                    <h2 className="text-2xl md:text-3xl font-serif font-bold text-blue-900 mb-2">Đăng Ký Dự Thi</h2>
                     <p className="text-slate-500">Miss Tourism Vietnam 2026</p>
                 </div>
 
@@ -175,7 +179,7 @@ export const ContestantRegistration = () => {
                         <p className="text-sm text-slate-500">Vui lòng điền chính xác thông tin</p>
                     </div>
 
-                    <form onSubmit={handleSubmit(onSubmit)} className="p-8 space-y-8">
+                    <form onSubmit={handleSubmit(onSubmit)} className="p-6 md:p-8 space-y-8">
                         {/* Avatar Upload */}
                         <div className="flex justify-center">
                             <div className="relative group cursor-pointer w-32 h-32">
@@ -229,6 +233,18 @@ export const ContestantRegistration = () => {
                                     <input {...register("nationality")} className="w-full p-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Việt Nam" />
                                 </div>
                                 <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Số CCCD/CMND</label>
+                                    <input {...register("identityCard")} className="w-full p-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="001234567890" required />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Giới tính</label>
+                                    <select {...register("gender")} className="w-full p-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none">
+                                        <option value="Nam">Nam</option>
+                                        <option value="Nữ">Nữ</option>
+                                        <option value="Khác">Khác</option>
+                                    </select>
+                                </div>
+                                <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1">Số điện thoại</label>
                                     <input {...register("phone")} className="w-full p-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="09xxxxxxxx" required />
                                 </div>
@@ -250,7 +266,7 @@ export const ContestantRegistration = () => {
                         {/* Section 2: Physical Info */}
                         <div className="border-t border-dashed border-gray-200 pt-8">
                             <h4 className="text-xs font-bold text-blue-900 uppercase tracking-widest mb-4 border-l-4 border-yellow-400 pl-3">2. Chỉ số hình thể</h4>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1">Chiều cao (cm)</label>
                                     <input type="number" step="0.1" {...register("height")} className="w-full p-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="170" required />
@@ -259,7 +275,7 @@ export const ContestantRegistration = () => {
                                     <label className="block text-sm font-medium text-slate-700 mb-1">Cân nặng (kg)</label>
                                     <input type="number" step="0.1" {...register("weight")} className="w-full p-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="50" required />
                                 </div>
-                                <div>
+                                <div className="col-span-2 md:col-span-1">
                                     <label className="block text-sm font-medium text-slate-700 mb-1">Số đo 3 vòng (cm)</label>
                                     <input {...register("measurements")} className="w-full p-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="90-60-90" required />
                                 </div>
@@ -316,7 +332,7 @@ export const ContestantRegistration = () => {
                             <button
                                 type="submit"
                                 disabled={isSaving}
-                                className="px-8 py-3 bg-gradient-to-r from-blue-900 to-blue-800 text-white font-bold uppercase tracking-wider rounded-xl shadow-lg hover:shadow-blue-900/40 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-blue-900 to-blue-800 text-white font-bold uppercase tracking-wider rounded-xl shadow-lg hover:shadow-blue-900/40 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
                                 {isSaving ? 'Đang xử lý...' : 'Gửi Hồ Sơ Dự Thi'}
                             </button>

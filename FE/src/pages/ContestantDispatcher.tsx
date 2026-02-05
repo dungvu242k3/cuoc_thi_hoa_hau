@@ -1,6 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { apiRequest } from "../lib/api";
+import { useAuthStore } from "../store/useAuthStore";
 
 const MY_PROFILE_QUERY_CHECK = `
 query MyProfile {
@@ -12,11 +13,11 @@ query MyProfile {
 
 export const ContestantDispatcher = () => {
     const navigate = useNavigate();
+    const { token, isAuthenticated } = useAuthStore();
 
     useEffect(() => {
-        const token = localStorage.getItem("token");
-        if (!token) {
-            navigate({ to: "/login" });
+        if (!isAuthenticated || !token) {
+            navigate({ to: "/login" as "/login" });
             return;
         }
 
@@ -24,17 +25,17 @@ export const ContestantDispatcher = () => {
             .then((data: any) => {
                 if (data && data.myProfile) {
                     // Registered -> Dashboard
-                    navigate({ to: "/contestant/dashboard" });
+                    navigate({ to: "/contestant/dashboard" as "/contestant/dashboard" });
                 } else {
                     // Not Registered -> Register Form
-                    navigate({ to: "/contestant/register" });
+                    navigate({ to: "/contestant/register" as "/contestant/register" });
                 }
             })
             .catch(() => {
                 // If error, assume needs login or something wrong, sending to login is safest
-                navigate({ to: "/login" });
+                navigate({ to: "/login" as "/login" });
             });
-    }, [navigate]);
+    }, [navigate, isAuthenticated, token]);
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-white">
