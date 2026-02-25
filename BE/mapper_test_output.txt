@@ -1,5 +1,0 @@
-=== RUN   TestMapPublicContestantToGraph
---- PASS: TestMapPublicContestantToGraph (0.00s)
-PASS
-ok  	cuoc_thi_hoa_hau/internal/adapter/graph/resolver	0.740s
-Done 

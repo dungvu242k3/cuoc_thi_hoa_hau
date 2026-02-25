@@ -1,4 +1,4 @@
-export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/query";
+export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/graphql";
 
 export const apiRequest = async (query: string, variables: any = {}, token?: string | null) => {
     const headers: HeadersInit = {

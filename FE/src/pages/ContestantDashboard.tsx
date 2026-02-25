@@ -217,7 +217,7 @@ export const ContestantDashboard = () => {
         try {
             // const token = localStorage.getItem("token"); // Removed
             let apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
-            if (apiUrl.endsWith("/query")) apiUrl = apiUrl.slice(0, -6);
+            if (apiUrl.endsWith("/graphql")) apiUrl = apiUrl.slice(0, -8);
 
             const response = await fetch(`${apiUrl}/upload`, {
                 method: "POST",
@@ -280,7 +280,7 @@ export const ContestantDashboard = () => {
     const getFullImageUrl = (path: string) => {
         if (!path) return "";
         if (path.startsWith("http") || path.startsWith("data:")) return path;
-        const baseUrl = (import.meta.env.VITE_API_URL || "http://localhost:8080").replace(/\/query\/?$/, "");
+        const baseUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/graphql\/?$/, "") : "http://localhost:8080";
         return `${baseUrl}${path}`;
     };
 

@@ -14,8 +14,7 @@ RUN go mod download
 COPY . .
 
 # Build the application
-# -o /app/bin/server ensures absolute path output
-RUN CGO_ENABLED=0 GOOS=linux go build -o /app/bin/server ./cmd/api
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/bin/server ./cmd/passiontech-beauty-contest
 
 # Run Stage
 FROM alpine:latest
